@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Secrets & environment
+.env
+.env.*
+!.env.example
+
+# Local databases & generated audio
+*.sqlite
+*.sqlite3
+*.db
+backend/static/audio/*
+!backend/static/audio/.gitkeep
+
+# Node / Frontend
+node_modules/
+npm-debug.log*
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# OS & Editor
+.DS_Store
+.idea/
+.vscode/
+*.sw?

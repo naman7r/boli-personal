@@ -1,0 +1,133 @@
+"""Phase 1 verification — run with the venv python from backend/.
+
+    ./.venv/Scripts/python.exe test_contrast.py
+    ./.venv/Scripts/python.exe test_contrast.py --base-url https://<space>.hf.space
+
+With no argument it drives the app in-process. With --base-url it runs
+the identical assertions against a deployed instance over HTTP, which is
+how Phase 10 re-checks the contrast against the real URL rather than
+localhost — deployment breaks subtle things, so this must be re-run
+there and not assumed.
+
+Two things are checked, both through the real FastAPI routes:
+
+1. The Santali script-contamination contrast (PRD.md §5, PLAN.md Phase 1
+   and 8). This is the single most important behaviour in the app —
+   re-run this after ANY change to the translation route or wrapper
+   (RULES.md §4).
+2. /speak returns real wav bytes for Ho.
+
+The contrast is driven by out-of-domain *vocabulary*, not sentence
+length: गेहूँ and धान both fall outside IndicTrans2's Santali training
+distribution and both leak Meetei Mayek. See the note in the assertions.
+"""
+
+import io
+import sys
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from main import app  # noqa: E402
+from models.translation import contains_meetei_mayek  # noqa: E402
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+
+TEXTBOOK = "किसान खेत में गेहूँ उगाता है और उसे बाज़ार में बेचता है।"
+ADAPTED_CLEAN = "धान हाट में बिकता है।"
+
+
+class _RemoteClient:
+    """Just enough of TestClient's surface to run the same assertions."""
+
+    def __init__(self, base_url):
+        import requests
+
+        self._base = base_url.rstrip("/")
+        self._session = requests.Session()
+
+    def post(self, path, **kwargs):
+        return self._session.post(self._base + path, timeout=180, **kwargs)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self._session.close()
+
+
+def _client():
+    args = sys.argv[1:]
+    if "--base-url" in args:
+        base = args[args.index("--base-url") + 1]
+        print(f"target   : {base}")
+        return _RemoteClient(base)
+    print("target   : in-process app")
+    return TestClient(app)
+
+
+def main():
+    with _client() as client:
+        r = client.post("/translate", json={"text": TEXTBOOK, "target": "sat_Olck"})
+        r.raise_for_status()
+        textbook = r.json()
+        textbook_out = textbook["translated"]
+        print("textbook :", TEXTBOOK, "\n        ->", textbook_out)
+
+        r = client.post("/translate", json={"text": ADAPTED_CLEAN, "target": "sat_Olck"})
+        r.raise_for_status()
+        adapted = r.json()
+        adapted_out = adapted["translated"]
+        print("adapted  :", ADAPTED_CLEAN, "\n        ->", adapted_out)
+
+        assert contains_meetei_mayek(textbook_out), (
+            "The long textbook sentence no longer leaks Meetei Mayek. Either the "
+            "checkpoint changed or the port is wrong — this contrast is a PRD.md "
+            "§5 success criterion, so fix it, do not relax this assertion."
+        )
+        assert not contains_meetei_mayek(adapted_out), (
+            "The adapted sentence now leaks Meetei Mayek — the clean half of the "
+            "contrast is gone. Same rule: fix it, do not relax the assertion."
+        )
+
+        # The route must report the contamination, not merely contain it.
+        # A caller that cannot tell these two responses apart will render
+        # broken output as if it were fine (ARCHITECTURE.md §3).
+        assert textbook["script_contamination"] is True, textbook
+        assert adapted["script_contamination"] is False, adapted
+        print("flagged  : textbook script_contamination=True, adapted=False")
+
+        # Ho: real speech, real bytes. Odia script, per DATA_DICTIONARY.md §1.
+        r = client.post("/speak", json={"text": "ଦା ଆଲେ ଜୀଉ ତାନା", "lang": "hoc"})
+        r.raise_for_status()
+        wav = r.content
+        assert wav[:4] == b"RIFF", f"not a wav file: {wav[:16]!r}"
+        assert len(wav) > 20_000, f"suspiciously short audio: {len(wav)} bytes"
+        print(f"ho wav   : {len(wav)} bytes, RIFF header ok")
+
+        # Multilingual translation: Ho is supported via North Munda transfer
+        r = client.post("/translate", json={"text": "पानी", "target": "hoc_Deva"})
+        assert r.status_code == 200, r.status_code
+        assert r.json()["translated"] in ("दा", "दाः", "ᱫᱟᱜ", "ଦା", "दा "), r.json()
+        print("ho trans : /translate Ho returned valid translation:", r.json()["translated"])
+
+        # Unsupported target remains a hard 501
+        r = client.post("/translate", json={"text": "पानी", "target": "xyz_Deva"})
+        assert r.status_code == 501, r.status_code
+
+        # Santali TTS: real speech via AI4Bharat Indic Parler-TTS (Ol Chiki)
+        r = client.post("/speak", json={"text": "ᱫᱟᱜ", "lang": "sat"})
+        assert r.status_code == 200, r.status_code
+        assert r.content[:4] == b"RIFF", f"not a wav file: {r.content[:16]!r}"
+        assert len(r.content) > 20_000, f"suspiciously short audio: {len(r.content)} bytes"
+        print(f"sat wav  : {len(r.content)} bytes, RIFF header ok")
+        print("boundary : /translate unsupported 501, /translate Ho 200, /speak Santali 200 (real wav)")
+
+    print("\nPASS")
+
+
+if __name__ == "__main__":
+    main()

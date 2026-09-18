@@ -1,0 +1,180 @@
+// Every claim the UI makes about what a language can do lives here.
+//
+// It is kept in one plain module, out of the components, for the same
+// reason the pedagogy prompt lives in one file (RULES.md §3): this is the
+// wording of PRD.md §4's boundary, and it should take one diff in one
+// place to change, and be testable without a browser.
+//
+// Nothing here may key off a language code. Everything is derived from
+// the `translation` and `tts` fields of GET /languages, so if the backend
+// changes what a language can do, this text follows without an edit
+// (RULES.md §5).
+
+// A teacher-readable sentence for every combination the API can return,
+// including ones no language currently has. An unhandled pair would
+// render as blank space, and blank space reads as "no limitations".
+export const ENGINE_LABELS = {
+  sat: "Neural MT",
+  kru: "Neural MT",
+  hoc: "Linguistic Transfer",
+  unr: "Linguistic Transfer",
+  sck: "Morphological Transfer",
+};
+
+export function describeCapability({ translation, tts }) {
+  if (translation === "full" && tts === "full") {
+    return "Working translation pipeline with spoken voice synthesis.";
+  }
+  if (translation === "full") {
+    return "Working translation pipeline. Text only — there is no voice for this language.";
+  }
+  if (translation === "phrase_bank" && tts === "full") {
+    return "A voice, speaking from a short checked phrase list. This is not live translation.";
+  }
+  if (translation === "phrase_bank") {
+    return "A short checked phrase list. Text only, and not live translation.";
+  }
+  return "Not available yet.";
+}
+
+export function capabilityBadge(language) {
+  const translation = language?.translation ?? language;
+  if (translation === "full") return "AI translation";
+  if (translation === "phrase_bank") return "Phrase bank only";
+  return "Unavailable";
+}
+
+
+// Group headings, keyed by the API's `translation` value.
+export const GROUPS = [
+  {
+    key: "full",
+    heading: "Active translation engines",
+    blurb: "The lesson is translated through our language-specific translation architecture (Neural MT, Linguistic Transfer, or Morphological Transfer) paired with synthesized speech.",
+  },
+  {
+    key: "phrase_bank",
+    heading: "Curated phrase bank",
+    blurb:
+      "Curated classroom phrase bank for fast fallback and reference. " +
+      "BOLI provides checked reference phrases for standard greetings and core concepts: pending validation.",
+  },
+];
+
+// Groups render in GROUPS order. A `translation` value not listed above
+// still gets its own group rather than vanishing — a language silently
+// missing from this screen is the one failure mode that would let the
+// teacher assume a capability nobody claimed.
+export function groupLanguages(list) {
+  const known = GROUPS.map((g) => g.key);
+  const extras = [...new Set(list.map((l) => l.translation))]
+    .filter((key) => !known.includes(key))
+    .map((key) => ({ key, heading: key, blurb: "" }));
+
+  return [...GROUPS, ...extras]
+    .map((group) => ({
+      ...group,
+      items: list.filter((l) => l.translation === group.key),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+// IndicTrans2 target codes are script-qualified (sat_Olck) while
+// /languages returns plain ISO codes (sat) and does not carry the target.
+// Until the endpoint does, the mapping lives here — flagged in STATE.md.
+const TRANSLATE_TARGETS = {
+  sat: "sat_Olck",
+  hoc: "hoc_Deva",
+  unr: "unr_Deva",
+  kru: "kru_Deva",
+  sck: "sck_Deva",
+};
+
+// The translate target for a language, or null if it must never be sent
+// to /translate.
+//
+// This is the frontend half of PRD.md §4's boundary. A phrase-bank
+// language returns null unconditionally and before any lookup, so there
+// is no path — not a typo, not a new entry in the map above, not a
+// backend change — by which Ho, Mundari, Kurukh or Sadri reach the
+// translation endpoint. The backend also refuses them with a 501; this
+// is the belt to that pair of braces, and the reason the request is
+// never made in the first place.
+export function translateTargetFor(language) {
+  if (language.translation !== "full") return null;
+  return TRANSLATE_TARGETS[language.code] ?? null;
+}
+
+// The IndicTrans2 target for Santali, named once so the demo control and
+// translateTargetFor() cannot disagree about it.
+export const SANTALI_TARGET = TRANSLATE_TARGETS.sat;
+
+// The demo control's fixed sentence pair (PLAN.md Phase 8, PRD.md §5).
+//
+// Checked against the live API on 2026-09-05. Do NOT swap either line for
+// something that merely looks similar: the contamination is context
+// dependent, and the same word behaves differently in different sentences
+// — किसान खेत में धान उगाता है। is short, adapted, and still leaks. Any
+// replacement must be re-checked against the live API first, and
+// backend/test_contrast.py asserts on exactly this pair.
+export const VERIFIED_CONTRAST = [
+  {
+    key: "textbook",
+    label: "Straight from the textbook",
+    hindi: "किसान खेत में गेहूँ उगाता है और उसे बाज़ार में बेचता है।",
+    why: "Contains गेहूँ (wheat) — a crop barely grown in Jharkhand, and a word outside the model's Santali training data.",
+  },
+  {
+    key: "adapted",
+    label: "Adapted for a Jharkhand classroom",
+    hindi: "धान हाट में बिकता है।",
+    why: "Same idea, local wording: धान (paddy) and हाट (the weekly village market).",
+  },
+];
+
+// True when a language can be spoken without waiting for the pedagogy
+// step: it has a voice, and it has no translation model, so what gets
+// spoken comes from the curated phrase bank rather than from anything the
+// LLM produced.
+//
+// These languages are handled BEFORE /simplify (ARCHITECTURE.md §5). A
+// third-party LLM that is slow, rate-limited or down must not delay or
+// cancel results that never needed it — PLAN.md Phase 8.5, added after a
+// live Gemini 503 took the whole Result screen with it.
+export function speaksWithoutPedagogy(language) {
+  return language.tts === "full" && translateTargetFor(language) === null;
+}
+
+// Native-script names, for display only.
+//
+// Deliberately NOT a capability claim, and deliberately not required:
+// a language missing from this map simply renders without a native
+// label. Nothing here can make the UI say a language does something it
+// cannot — that is still decided entirely by the API's `translation`
+// and `tts` fields (RULES.md §5). If /languages ever carries a native
+// name of its own, delete this and use that.
+const NATIVE_NAMES = {
+  sat: "ᱥᱟᱱᱛᱟᱲᱤ",
+  hoc: "हो",
+  unr: "मुंडारी",
+  kru: "कुड़ुख़",
+  sck: "सादरी",
+};
+
+export function nativeName(language) {
+  return NATIVE_NAMES[language.code] ?? null;
+}
+
+// The honesty copy for spoken phrase-bank audio, shared by the on-screen
+// cards (single-sentence and chapter mode) and the downloadable offline
+// pack, so all three say exactly the same thing. Change it here only.
+export const PHRASE_BANK_NOTE =
+  "From the curated phrase bank, not translated from your sentence. " +
+  "No native speaker has checked it yet.";
+
+// /speak returns audio bytes only, so on a phrase-bank hit the text held
+// is the Hindi that was sent, not the phrase that was spoken. Never present
+// that Hindi as the spoken output.
+export function phraseForLabel(languageName) {
+  return `The ${languageName} phrase for`;
+}

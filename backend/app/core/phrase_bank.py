@@ -1,0 +1,208 @@
+"""The curated phrase bank — the honest substitute for translation into
+Ho, Mundari, Kurukh and Sadri.
+
+This module is the source of truth for the table documented in
+DATA_DICTIONARY.md §2. It exists because these four languages have no
+open parallel corpus and no translation model, from us or anyone else
+(PRD.md §4). A fixed Hindi phrase maps to a known target string that
+stays inside the TTS checkpoint's character set; nothing here is
+generated, and nothing here is translation.
+
+**Every entry is unverified by a native speaker.** `verified` stays
+False until an actual speaker confirms an entry, and STATE.md records
+whether that has happened. Do not flip it to True to make a screen look
+better (RULES.md §2).
+
+Adding entries is encouraged — more classroom topics make a better demo.
+Each new one needs a Hindi source, a hand-constructed or speaker-given
+target string in the script that checkpoint expects (models/tts.py
+SCRIPTS), and `verified: False`.
+"""
+
+import re
+
+PHRASES = [
+    # 1. पानी हमारा जीवन है (Water is our life)
+    {
+        "id": 1,
+        "lang": "hoc",
+        "hindi_source": "पानी हमारा जीवन है",
+        "target_text": "ଦା ଆଲେ ଜୀଉ ତାନା",  # Odia script
+        "verified": False,
+    },
+    {
+        "id": 2,
+        "lang": "unr",
+        "hindi_source": "पानी हमारा जीवन है",
+        "target_text": "ଦା ଆଲେ ଜିଉ ତାନା",  # Odia script
+        "verified": False,
+    },
+    {
+        "id": 3,
+        "lang": "kru",
+        "hindi_source": "पानी हमारा जीवन है",
+        "target_text": "अम्म हमक जीवन रअदा",
+        "verified": False,
+    },
+    {
+        "id": 4,
+        "lang": "sck",
+        "hindi_source": "पानी हमारा जीवन है",
+        "target_text": "पानी हमन के जीवन हे",
+        "verified": False,
+    },
+    # 2. नमस्ते (Classroom greeting)
+    {
+        "id": 5,
+        "lang": "hoc",
+        "hindi_source": "नमस्ते",
+        "target_text": "ଜୋହାର",
+        "verified": False,
+    },
+    {
+        "id": 6,
+        "lang": "unr",
+        "hindi_source": "नमस्ते",
+        "target_text": "ଜୋହାର",
+        "verified": False,
+    },
+    {
+        "id": 7,
+        "lang": "kru",
+        "hindi_source": "नमस्ते",
+        "target_text": "जोहार",
+        "verified": False,
+    },
+    {
+        "id": 8,
+        "lang": "sck",
+        "hindi_source": "नमस्ते",
+        "target_text": "जोहार",
+        "verified": False,
+    },
+    # 3. किताब खोलो (Open book)
+    {
+        "id": 9,
+        "lang": "hoc",
+        "hindi_source": "किताब खोलो",
+        "target_text": "ପୁଥି ଉଗାଡ଼ା",
+        "verified": False,
+    },
+    {
+        "id": 10,
+        "lang": "unr",
+        "hindi_source": "किताब खोलो",
+        "target_text": "ପୁଥି ଉଗାଡ଼ା",
+        "verified": False,
+    },
+    {
+        "id": 11,
+        "lang": "kru",
+        "hindi_source": "किताब खोलो",
+        "target_text": "किताब उग्गड़ा",
+        "verified": False,
+    },
+    {
+        "id": 12,
+        "lang": "sck",
+        "hindi_source": "किताब खोलो",
+        "target_text": "किताब खोला",
+        "verified": False,
+    },
+    # 4. यहाँ बैठो (Sit here)
+    {
+        "id": 13,
+        "lang": "hoc",
+        "hindi_source": "यहाँ बैठो",
+        "target_text": "ନେରେ ଦୁବୁ ମେ",
+        "verified": False,
+    },
+    {
+        "id": 14,
+        "lang": "unr",
+        "hindi_source": "यहाँ बैठो",
+        "target_text": "ନେରେ ଦୁବୁ ମେ",
+        "verified": False,
+    },
+    {
+        "id": 15,
+        "lang": "kru",
+        "hindi_source": "यहाँ बैठो",
+        "target_text": "इस्सने उक्का",
+        "verified": False,
+    },
+    {
+        "id": 16,
+        "lang": "sck",
+        "hindi_source": "यहाँ बैठो",
+        "target_text": "इहाँ बैठा",
+        "verified": False,
+    },
+    # 5. स्कूल चलो (Let's go to school)
+    {
+        "id": 17,
+        "lang": "hoc",
+        "hindi_source": "स्कूल चलो",
+        "target_text": "ଇସ୍କୁଲ ସେନୋଃ ମେ",
+        "verified": False,
+    },
+    {
+        "id": 18,
+        "lang": "unr",
+        "hindi_source": "स्कूल चलो",
+        "target_text": "ଇସ୍କୁଲ ସେନୋଃ ମେ",
+        "verified": False,
+    },
+    {
+        "id": 19,
+        "lang": "kru",
+        "hindi_source": "स्कूल चलो",
+        "target_text": "स्कूल कला",
+        "verified": False,
+    },
+    {
+        "id": 20,
+        "lang": "sck",
+        "hindi_source": "स्कूल चलो",
+        "target_text": "स्कूल चला",
+        "verified": False,
+    },
+]
+
+# The languages this bank covers — i.e. the ones with no translation model.
+LANGS = sorted({p["lang"] for p in PHRASES})
+
+
+def options(lang: str) -> list[dict]:
+    """Every phrase available in `lang`, for the UI to offer as choices."""
+    return [p for p in PHRASES if p["lang"] == lang]
+
+
+def _clean(s: str) -> str:
+    s = re.sub(r"[.!?,।:;\-_\"'()]+", " ", s)
+    return " ".join(s.strip().split()).lower()
+
+
+def lookup(lang: str, text: str) -> dict | None:
+    """Find the entry `text` refers to, by Hindi source or by target text.
+
+    Lenient about punctuation and whitespace, strict about matching a known phrase.
+    """
+    cleaned = _clean(text)
+
+    if not cleaned:
+        return None
+
+    opts = options(lang)
+    # Exact cleaned match
+    for p in opts:
+        if cleaned in (_clean(p["hindi_source"]), _clean(p["target_text"])):
+            return p
+
+    return None
+
+
+def _normalise(text: str) -> str:
+    """Collapse whitespace and drop sentence-final punctuation."""
+    return " ".join(text.split()).rstrip("।॥?!. ")
+
