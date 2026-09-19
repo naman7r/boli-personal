@@ -2,7 +2,16 @@
 // directly — the gated HF token must never reach the browser
 // (ARCHITECTURE.md §1).
 
-const BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8001";
+export function getApiBase() {
+  if (typeof window !== "undefined") {
+    const custom = window.__BOLI_API_BASE__ || window.localStorage?.getItem("BOLI_API_BASE");
+    if (custom) return custom.replace(/\/+$/, "");
+    if (window.location.hostname.includes("vercel.app")) {
+      return "https://22b3bc168ae92b.lhr.life";
+    }
+  }
+  return import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8001";
+}
 
 // FastAPI puts its error message in `detail`. Surface that to the teacher
 // rather than a generic failure — the backend's messages are written to be
@@ -22,7 +31,7 @@ const UNREACHABLE = "Couldn't reach the server. Check it is running and try agai
 
 async function send(path, init) {
   try {
-    return await fetch(`${BASE}${path}`, init);
+    return await fetch(`${getApiBase()}${path}`, init);
   } catch {
     throw new Error(UNREACHABLE);
   }
@@ -65,7 +74,7 @@ export function simplify(text, grade = 2) {
 export async function extractChapter(file) {
   const form = new FormData();
   form.append("file", file);
-  const response = await fetch(`${BASE}/chapter/extract`, {
+  const response = await fetch(`${getApiBase()}/chapter/extract`, {
     method: "POST",
     body: form,
   });
@@ -77,7 +86,7 @@ export async function extractChapter(file) {
 export async function transcribeAudio(audioBlob) {
   const form = new FormData();
   form.append("file", audioBlob, "recording.wav");
-  const response = await fetch(`${BASE}/asr`, {
+  const response = await fetch(`${getApiBase()}/asr`, {
     method: "POST",
     body: form,
   });
