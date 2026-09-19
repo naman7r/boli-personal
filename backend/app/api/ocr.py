@@ -2,6 +2,7 @@
 
 import io
 import os
+import re
 import shutil
 from functools import lru_cache
 
@@ -11,7 +12,7 @@ from PIL import Image
 
 router = APIRouter()
 
-LANG = "hin"
+LANG = "hin+eng"
 LOW_CONFIDENCE_BELOW = 70
 
 _WINDOWS_DEFAULT = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -41,40 +42,70 @@ def _binary() -> str:
 async def ocr(file: UploadFile = File(...)):
     pytesseract.pytesseract.tesseract_cmd = _binary()
     try:
-        image = Image.open(io.BytesIO(await file.read()))
+        file_bytes = await file.read()
     except Exception as e:
-        raise HTTPException(400, f"The uploaded file is not a valid image: {e}")
+        raise HTTPException(400, f"Could not read uploaded file: {e}")
 
-    try:
-        data = pytesseract.image_to_data(
-            image, lang=LANG, output_type=pytesseract.Output.DICT
-        )
-    except pytesseract.TesseractNotFoundError:
-        raise HTTPException(
-            500,
-            "Tesseract is not installed or not on PATH. Install it with the Hindi "
-            "('hin') language pack, or set TESSERACT_CMD in backend/.env.",
-        )
-    except pytesseract.TesseractError as e:
-        raise HTTPException(
-            500, f"Tesseract failed to read image. Is 'hin' pack installed? Error: {e}"
-        )
+    filename = (file.filename or "").lower()
+    images = []
 
-    words = []
-    confidences = []
-    for text, conf in zip(data["text"], data["conf"]):
-        t = text.strip()
-        if t:
-            words.append(t)
+    # Support PDF files directly in /ocr via pypdfium2 rasterization
+    if filename.endswith(".pdf") or file_bytes.startswith(b"%PDF"):
+        try:
+            import pypdfium2 as pdfium
+
+            doc = pdfium.PdfDocument(file_bytes)
+            for page in doc:
+                images.append(page.render(scale=2.5).to_pil())
+        except Exception as e:
+            raise HTTPException(400, f"Could not parse uploaded PDF for OCR: {e}")
+    else:
+        try:
+            images.append(Image.open(io.BytesIO(file_bytes)))
+        except Exception as e:
+            raise HTTPException(400, f"The uploaded file is not a valid image: {e}")
+
+    all_words = []
+    all_confidences = []
+
+    for img in images:
+        try:
+            data = pytesseract.image_to_data(
+                img, lang=LANG, output_type=pytesseract.Output.DICT
+            )
+        except pytesseract.TesseractNotFoundError:
+            raise HTTPException(
+                500,
+                "Tesseract is not installed or not on PATH. Install it with the Hindi "
+                "('hin') language pack, or set TESSERACT_CMD in backend/.env.",
+            )
+        except pytesseract.TesseractError as e:
+            # Fallback to hin if hin+eng is missing eng
             try:
-                c = float(conf)
-                if c >= 0:
-                    confidences.append(c)
-            except (ValueError, TypeError):
-                pass
+                data = pytesseract.image_to_data(
+                    img, lang="hin", output_type=pytesseract.Output.DICT
+                )
+            except Exception as e2:
+                raise HTTPException(
+                    500, f"Tesseract failed to read image. Is 'hin' pack installed? Error: {e2}"
+                )
 
-    full_text = " ".join(words)
-    mean_conf = sum(confidences) / len(confidences) if confidences else 0.0
+        for text, conf in zip(data.get("text", []), data.get("conf", [])):
+            t = text.strip()
+            if t:
+                # Clean any stray CID references
+                cleaned_t = re.sub(r"\(cid:\d+\)", "", t).strip()
+                if cleaned_t:
+                    all_words.append(cleaned_t)
+                    try:
+                        c = float(conf)
+                        if c >= 0:
+                            all_confidences.append(c)
+                    except (ValueError, TypeError):
+                        pass
+
+    full_text = " ".join(all_words)
+    mean_conf = sum(all_confidences) / len(all_confidences) if all_confidences else 0.0
     confidence_flag = "low" if mean_conf < LOW_CONFIDENCE_BELOW else "normal"
 
     return {
