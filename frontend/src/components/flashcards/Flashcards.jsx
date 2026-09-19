@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { speak } from "../../api";
 import AudioPlayer from "../AudioPlayer";
 
 // Primary FLN (Foundational Literacy & Numeracy) Bilingual Flashcards
-// Designed for Jharkhand primary classrooms (Classes 1–3)
+// Curated for Jharkhand primary classrooms (Classes 1–3)
+// Supported in: Santali (Ol Chiki), Ho (Devanagari/Warang Chiti), Mundari, Kurukh, Sadri
 const FOUNDATION_CARDS = [
   {
     id: "water",
@@ -12,34 +13,44 @@ const FOUNDATION_CARDS = [
     color: "#0288D1",
     hindi: "जल / पानी",
     meaning: "Water — जीवन का आधार",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱫᱟᱜ",
         translit: "Daag",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱫᱟᱜ",
+        sentence: "कुएं का पानी साफ है। (ᱫᱟᱜ ᱥᱟᱯᱷᱟ ᱜᱮᱭᱟ)",
       },
       hoc: {
-        script: "ᱫᱟᱜ",
+        script: "दाः (𑢵𑢫)",
         translit: "Daa",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "दा",
+        sentence: "कुएं का पानी साफ है। (कुंई रेयाः दाः सफा मेनाः)",
       },
       unr: {
-        script: "ᱫᱟᱻ",
+        script: "दाः",
         translit: "Da:",
         langName: "Mundari (मुंडारी)",
+        ttsText: "दा",
+        sentence: "कुएं का पानी साफ है। (कुंआ रेयाः दाः सफा मेनाः)",
       },
       kru: {
         script: "अम्म",
         translit: "Amm",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "अम्म",
+        sentence: "कुएं का पानी साफ है। (कुंआ ही अम्म साफ रई)",
       },
       sck: {
         script: "पानी",
         translit: "Paani",
         langName: "Sadri (नागपुरी)",
+        ttsText: "पानी",
+        sentence: "कुएं का पानी साफ है। (कुँवा कर पानी साफ हे)",
       },
     },
-    sampleSentence: "कुएं का पानी साफ है। (ᱫᱟᱜ ᱥᱟᱯᱷᱟ ᱜᱮᱭᱟ)",
   },
   {
     id: "tree",
@@ -48,34 +59,44 @@ const FOUNDATION_CARDS = [
     color: "#2E7D32",
     hindi: "पेड़ / वृक्ष",
     meaning: "Tree — सखुआ और महुआ के पेड़",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱫᱟᱨᱮ",
         translit: "Dare",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱫᱟᱨᱮ",
+        sentence: "जंगल में बड़े पेड़ हैं। (ᱵᱤᱨ ᱨᱮ ᱢᱟᱨᱟᱝ ᱫᱟᱨᱮ ᱢᱮᱱᱟᱜᱼᱟ)",
       },
       hoc: {
-        script: "ᱫᱟᱨᱩ",
+        script: "दारु (𑢵𑢡𑢣)",
         translit: "Daru",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "दारु",
+        sentence: "जंगल में बड़े पेड़ हैं। (बिर रे मारंग दारु मेनाः)",
       },
       unr: {
         script: "दारु",
         translit: "Daaru",
         langName: "Mundari (मुंडारी)",
+        ttsText: "दारु",
+        sentence: "जंगल में बड़े पेड़ हैं। (बिर रे मारंग दारु मेनाः)",
       },
       kru: {
         script: "मन्न",
         translit: "Mann",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "मन्न",
+        sentence: "जंगल में बड़े पेड़ हैं। (टोड़ंग नू कोहा मन्न रई)",
       },
       sck: {
-        script: "गाछ",
+        script: "गाछ / रूख",
         translit: "Gaachh",
         langName: "Sadri (नागपुरी)",
+        ttsText: "गाछ",
+        sentence: "जंगल में बड़े पेड़ हैं। (बोन में बड़ गाछ मन आंय)",
       },
     },
-    sampleSentence: "जंगल में बड़े पेड़ हैं। (ᱵᱤᱨ ᱨᱮ ᱢᱟᱨᱟᱝ ᱫᱟᱨᱮ ᱢᱮᱱᱟᱜᱼᱟ)",
   },
   {
     id: "sun",
@@ -84,214 +105,274 @@ const FOUNDATION_CARDS = [
     color: "#F57C00",
     hindi: "सूरज / सूर्य",
     meaning: "Sun — सुबह की धूप",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱥᱤᱧ / ᱵᱮᱲᱟ",
         translit: "Sin / Beda",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱥᱤᱧ ᱵᱮᱲᱟ",
+        sentence: "पूरब से सूरज निकला। (ᱥᱤᱧ ᱪᱟᱸᱫᱚ ᱨᱟᱠᱟᱵ ᱮᱱᱟ)",
       },
       hoc: {
-        script: "ᱥᱤᱝᱜᱤ",
+        script: "सिंगी (𑢷𑢳𑢢𑢱)",
         translit: "Singi",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "सिंगी",
+        sentence: "पूरब से सूरज निकला। (सिंगी पूरब रे ओलोःयेना)",
       },
       unr: {
         script: "सिंगी",
         translit: "Singi",
         langName: "Mundari (मुंडारी)",
+        ttsText: "सिंगी",
+        sentence: "पूरब से सूरज निकला। (सिंगी पूरब ते ओड़ोःयेना)",
       },
       kru: {
         script: "बीड़ी",
         translit: "Bidi",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "बीड़ी",
+        sentence: "पूरब से सूरज निकला। (बीड़ी पूरब तरा उरगिया)",
       },
       sck: {
         script: "सुरुज",
         translit: "Suruj",
         langName: "Sadri (नागपुरी)",
+        ttsText: "सुरुज",
+        sentence: "पूरब से सूरज निकला। (पूरब से सुरुज निकललक)",
       },
     },
-    sampleSentence: "पूरब से सूरज निकला। (ᱥᱤᱧ ᱪᱟᱸᱫᱚ ᱨᱟᱠᱟᱵ ᱮᱱᱟ)",
   },
   {
     id: "mother",
     category: "परिवार (Family)",
-    icon: "family_restroom",
-    color: "#C2185B",
+    icon: "face_3",
+    color: "#D81B60",
     hindi: "माँ / माता",
-    meaning: "Mother — स्नेह और दुलार",
+    meaning: "Mother — परिवार की धुरी",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱟᱭᱳ / ᱮᱸᱜᱟᱛ",
         translit: "Ayo / Engat",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱟᱭᱳ",
+        sentence: "माँ मुझे खाना खिलाती है। (ᱟᱭᱳ ᱤᱧ ᱫᱟᱠᱟᱭ ᱮᱢᱟᱹᱧ ᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱮᱸᱜᱟ",
+        script: "एंगा (𑢮𑢢𑢤)",
         translit: "Enga",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "एंगा",
+        sentence: "माँ मुझे खाना खिलाती है। (एंगा अञ मांडी एमइञ तना)",
       },
       unr: {
-        script: "एंगा",
-        translit: "Enga",
+        script: "एंगा / आयो",
+        translit: "Enga / Ayo",
         langName: "Mundari (मुंडारी)",
+        ttsText: "एंगा",
+        sentence: "माँ मुझे खाना खिलाती है। (एंगा अइञ मंडी ओमोइञ तना)",
       },
       kru: {
         script: "अयो",
         translit: "Ayo",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "अयो",
+        sentence: "माँ मुझे खाना खिलाती है। (अयो एंग मंडी चीई)",
       },
       sck: {
         script: "माय",
         translit: "Maay",
         langName: "Sadri (नागपुरी)",
+        ttsText: "माय",
+        sentence: "माँ मुझे खाना खिलाती है। (माय मोहिं भात खियावेला)",
       },
     },
-    sampleSentence: "माँ मुझे खाना खिलाती है। (ᱟᱭᱳ ᱤᱧ ᱫᱟᱠᱟᱭ ᱮᱢᱟᱹᱧ ᱠᱟᱱᱟ)",
   },
   {
     id: "friend",
     category: "मित्रता (Friendship)",
     icon: "diversity_1",
-    color: "#7B1FA2",
+    color: "#8E24AA",
     hindi: "दोस्त / सखा",
-    meaning: "Friend — कक्षा में साथी",
+    meaning: "Friend — खेल का साथी",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱜᱟᱛᱮ",
         translit: "Gate",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱜᱟᱛᱮ",
+        sentence: "हम सब अच्छे दोस्त हैं। (ᱟᱞᱮ ᱵᱮᱥ ᱜᱟᱛᱮ ᱠᱟᱱᱟᱞᱮ)",
       },
       hoc: {
-        script: "ᱜᱟᱛᱮ",
+        script: "गाते (𑢤𑢡𑢦𑢮)",
         translit: "Gate",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "गाते",
+        sentence: "हम सब अच्छे दोस्त हैं। (अले बुरु गाते तनाको)",
       },
       unr: {
         script: "गाते",
         translit: "Gate",
         langName: "Mundari (मुंडारी)",
+        ttsText: "गाते",
+        sentence: "हम सब अच्छे दोस्त हैं। (आले बुगी गाते तनाको)",
       },
       kru: {
         script: "संगी",
         translit: "Sangi",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "संगी",
+        sentence: "हम सब अच्छे दोस्त हैं। (नाम दऊ संगी हिकत)",
       },
       sck: {
         script: "संगी / जोहारिया",
         translit: "Sangi",
         langName: "Sadri (नागपुरी)",
+        ttsText: "संगी",
+        sentence: "हम सब अच्छे दोस्त हैं। (हमन बेस संगी हकी)",
       },
     },
-    sampleSentence: "हम सब अच्छे दोस्त हैं। (ᱟᱞᱮ ᱵᱮᱥ ᱜᱟᱛᱮ ᱠᱟᱱᱟᱞᱮ)",
   },
   {
     id: "school",
     category: "विद्यालय (School)",
     icon: "school",
-    color: "#E65100",
+    color: "#3949AB",
     hindi: "विद्यालय / स्कूल",
-    meaning: "School — ज्ञान का घर",
+    meaning: "School — ज्ञान और खेल का केंद्र",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱟᱥᱲᱟ",
-        translit: "Asda",
-        langName: "Santali (Ol Chiki)",
+        script: "ᱵᱤᱨᱫᱟᱹᱜᱟᱲ",
+        translit: "Birdagarh",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱵᱤᱨᱫᱟᱹᱜᱟᱲ",
+        sentence: "बच्चे स्कूल जा रहे हैं। (ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ ᱵᱤᱨᱫᱟᱹᱜᱟᱲ ᱛᱮᱠᱚ ᱥᱮᱱᱚᱜ ᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱤᱛᱩᱱ ᱟᱥᱲᱟ",
-        translit: "Itun Asda",
-        langName: "Ho (ᱦᱳ)",
+        script: "इटुन आसरा (𑢳𑢦𑢯𑢮 𑢡𑢷𑢡)",
+        translit: "Itun Aasra",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "इटुन आसरा",
+        sentence: "बच्चे स्कूल जा रहे हैं। (होनको इटुन आसरा सेने तनको)",
       },
       unr: {
-        script: "इतुन आसड़ा",
-        translit: "Itun Asda",
+        script: "इस्कुल / इटुन ओड़ाः",
+        translit: "Iskul",
         langName: "Mundari (मुंडारी)",
+        ttsText: "इस्कुल",
+        sentence: "बच्चे स्कूल जा रहे हैं। (हुनको इस्कुल सेनोः तनाको)",
       },
       kru: {
-        script: "पढ़ना गढ़ी",
-        translit: "Padhna Gadhi",
+        script: "स्कूल / पड़हा अड्डा",
+        translit: "School",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "स्कूल",
+        sentence: "बच्चे स्कूल जा रहे हैं। (खद्दार स्कूल कालर)",
       },
       sck: {
-        script: "इस्कूल",
+        script: "इस्कूल / पाठशाला",
         translit: "Iskool",
         langName: "Sadri (नागपुरी)",
+        ttsText: "इस्कूल",
+        sentence: "बच्चे स्कूल जा रहे हैं। (छौआ मन इस्कूल जात हैं)",
       },
     },
-    sampleSentence: "बच्चे रोज स्कूल जाते हैं। (ᱜᱤᱫᱽᱨᱟᱹ ᱫᱤᱱᱟᱹᱢ ᱟᱥᱲᱟ ᱠᱚ ᱥᱮᱱᱚᱜᱼᱟ)",
   },
   {
     id: "book",
     category: "विद्यालय (School)",
     icon: "menu_book",
-    color: "#1565C0",
+    color: "#00897B",
     hindi: "किताब / पुस्तक",
-    meaning: "Book — सुंदर कहानियाँ",
+    meaning: "Book — कहानियों और पाठ का खजाना",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱯᱩᱛᱷᱤ",
-        translit: "Puthi",
-        langName: "Santali (Ol Chiki)",
+        script: "ᱯᱚᱛᱚᱵ",
+        translit: "Potob",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱯᱚᱛᱚᱵ",
+        sentence: "यह मेरी हिंदी की किताब है। (ᱱᱚᱣᱟ ᱫᱚ ᱤᱧᱟᱜ ᱦᱤᱱᱫᱤ ᱯᱚᱛᱚᱵ ᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱯᱩᱛᱷᱤ",
+        script: "पुथी (𑢪𑢯𑢦𑢳)",
         translit: "Puthi",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "पुथी",
+        sentence: "यह मेरी किताब है। (नेयाः अञाः पुथी तना)",
       },
       unr: {
         script: "पुथी",
         translit: "Puthi",
         langName: "Mundari (मुंडारी)",
+        ttsText: "पुथी",
+        sentence: "यह मेरी किताब है। (नेयाः अइञाः पुथी तना)",
       },
       kru: {
-        script: "बिजा",
-        translit: "Bija",
+        script: "किताब / पुथी",
+        translit: "Kitab",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "किताब",
+        sentence: "यह मेरी किताब है। (ईदन एंग्है किताब हिकै)",
       },
       sck: {
         script: "किताब / पोथी",
-        translit: "Pothi",
+        translit: "Kitab",
         langName: "Sadri (नागपुरी)",
+        ttsText: "किताब",
+        sentence: "यह मेरी किताब है। (ई हमर किताब हे)",
       },
     },
-    sampleSentence: "यह मेरी हिंदी की किताब है। (ᱱᱚᱣᱟ ᱤᱧᱟᱜ ᱯᱩᱛᱷᱤ ᱠᱟᱱᱟ)",
   },
   {
     id: "bird",
     category: "प्रकृति (Nature)",
-    icon: "cruelty_free",
-    color: "#00796B",
+    icon: "flutter",
+    color: "#00ACC1",
     hindi: "चिड़िया / पक्षी",
-    meaning: "Bird — मीठी बोली",
+    meaning: "Bird — डाल पर चहकने वाली",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱪᱮᱸᱬᱮ",
-        translit: "Chende",
-        langName: "Santali (Ol Chiki)",
+        script: "ᱪᱮᱬᱮ",
+        translit: "Chene",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱪᱮᱬᱮ",
+        sentence: "चिड़िया डाल पर बैठी है। (ᱪᱮᱬᱮ ᱰᱟᱹᱨ ᱨᱮᱭ ᱫᱩᱲᱩᱵ ᱟᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱪᱮᱸᱬᱮ",
+        script: "चेंड़े (𑢰𑢮𑢢𑢲)",
         translit: "Chende",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "चेंड़े",
+        sentence: "चिड़िया डाल पर बैठी है। (चेंड़े दारु रे दुबुःयेना)",
       },
       unr: {
-        script: "चेड़े",
-        translit: "Chede",
+        script: "चेंड़े",
+        translit: "Chende",
         langName: "Mundari (मुंडारी)",
+        ttsText: "चेंड़े",
+        sentence: "चिड़िया डाल पर बैठी है। (चेंड़े दारु रे दुबुःयेना)",
       },
       kru: {
-        script: "ओड़ा",
-        translit: "Oda",
+        script: "ओड़ो",
+        translit: "Oro",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "ओड़ो",
+        sentence: "चिड़िया डाल पर बैठी है। (ओड़ो मन्न तरा उक्की)",
       },
       sck: {
         script: "चिरई",
         translit: "Chirai",
         langName: "Sadri (नागपुरी)",
+        ttsText: "चिरई",
+        sentence: "चिड़िया डाल पर बैठी है। (चिरई डारी ऊपर बईठल हे)",
       },
     },
-    sampleSentence: "पेड़ पर सुंदर चिड़िया बैठी है। (ᱫᱟᱨᱮ ᱨᱮ ᱪᱮᱸᱬᱮ ᱢᱮᱱᱟᱭᱟ)",
   },
   {
     id: "flower",
@@ -299,107 +380,137 @@ const FOUNDATION_CARDS = [
     icon: "local_florist",
     color: "#E91E63",
     hindi: "फूल / पुष्प",
-    meaning: "Flower — पलाश के लाल फूल",
+    meaning: "Flower — रंग-बिरंगे सुगंधित फूल",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱵᱟᱦᱟ",
         translit: "Baha",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱵᱟᱦᱟ",
+        sentence: "बगीचे में लाल फूल खिला है। (ᱵᱟᱜᱟᱱ ᱨᱮ ᱟᱨᱟᱜ ᱵᱟᱦᱟ ᱯᱷᱩᱴᱟᱹᱣ ᱟᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱵᱟ",
+        script: "बा (𑢠𑢡)",
         translit: "Baa",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "बा",
+        sentence: "सुंदर फूल खिला है। (बुगी बा ओड़ोःयेना)",
       },
       unr: {
         script: "बाहा",
-        translit: "Baaha",
+        translit: "Baha",
         langName: "Mundari (मुंडारी)",
+        ttsText: "बाहा",
+        sentence: "सुंदर फूल खिला है। (बुगी बाहा ओड़ोःयेना)",
       },
       kru: {
-        script: "पुंप",
-        translit: "Pump",
+        script: "पुप्प",
+        translit: "Pupp",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "पुप्प",
+        sentence: "सुंदर फूल खिला है। (दऊ पुप्प फुटाब रई)",
       },
       sck: {
         script: "फूल",
         translit: "Phool",
         langName: "Sadri (नागपुरी)",
+        ttsText: "फूल",
+        sentence: "सुंदर फूल खिला है। (सुंदर फूल फूलल हे)",
       },
     },
-    sampleSentence: "जंगल में पलाश के फूल खिले हैं। (ᱵᱤᱨ ᱨᱮ ᱯᱚᱞᱟᱥ ᱵᱟᱦᱟ ᱯᱷᱩᱴᱟᱹᱣ ᱮᱱᱟ)",
   },
   {
     id: "river",
     category: "प्रकृति (Nature)",
     icon: "waves",
-    color: "#00ACC1",
+    color: "#1E88E5",
     hindi: "नदी / सरिता",
-    meaning: "River — बहती धारा (दामोदर/सुवर्णरेखा)",
+    meaning: "River — गाँव से बहती निर्मल धारा",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱜᱟᱰᱟ",
         translit: "Gada",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱜᱟᱰᱟ",
+        sentence: "नदी का पानी बह रहा है। (ᱜᱟᱰᱟ ᱫᱟᱜ ᱞᱤᱸᱜᱤᱱ ᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱜᱟᱰᱟ",
+        script: "गाड़ा (𑢤𑢡𑢲𑢡)",
         translit: "Gada",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "गाड़ा",
+        sentence: "नदी का पानी बह रहा है। (गाड़ा दाः लिंगी तन)",
       },
       unr: {
         script: "गाड़ा",
-        translit: "Gaada",
+        translit: "Gada",
         langName: "Mundari (मुंडारी)",
+        ttsText: "गाड़ा",
+        sentence: "नदी का पानी बह रहा है। (गाड़ा दाः लिंगी तना)",
       },
       kru: {
-        script: "खड्ड",
-        translit: "Khadd",
+        script: "खल / नदी",
+        translit: "Khal",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "खल",
+        sentence: "नदी का पानी बह रहा है। (खल ता अम्म बोहोरारी)",
       },
       sck: {
-        script: "नदी / सोता",
-        translit: "Nadi / Sota",
+        script: "नदी / जोरिया",
+        translit: "Nadi",
         langName: "Sadri (नागपुरी)",
+        ttsText: "नदी",
+        sentence: "नदी का पानी बह रहा है। (नदी कर पानी बहत हे)",
       },
     },
-    sampleSentence: "गाँव के किनारे नदी बहती है। (ᱟᱹᱛᱩ ᱟᱲᱮ ᱛᱮ ᱜᱟᱰᱟ ᱞᱤᱸᱜᱤᱱ ᱠᱟᱱᱟ)",
   },
   {
     id: "moon",
     category: "प्रकृति (Nature)",
-    icon: "dark_mode",
+    icon: "bedtime",
     color: "#5C6BC0",
     hindi: "चाँद / चंद्रमा",
-    meaning: "Moon — रात की चाँदनी",
+    meaning: "Moon — रात का शीतल उजाला",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱪᱟᱸᱫᱚ",
         translit: "Chando",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱪᱟᱸᱫᱚ",
+        sentence: "रात को चाँद चमकता है। (ᱧᱤᱫᱟᱹ ᱪᱟᱸᱫᱚᱭ ᱡᱩᱞᱩᱜ ᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱪᱟᱸᱫᱩ",
+        script: "चांदु (𑢰𑢡𑢢𑢵𑢯)",
         translit: "Chandu",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "चांदु",
+        sentence: "रात को चाँद चमकता है। (निदा चांदु जुलुः तना)",
       },
       unr: {
         script: "चांदु",
-        translit: "Chaandu",
+        translit: "Chandu",
         langName: "Mundari (मुंडारी)",
+        ttsText: "चांदु",
+        sentence: "रात को चाँद चमकता है। (निदा चांदु जुलुः तना)",
       },
       kru: {
         script: "चन्दो",
         translit: "Chando",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "चन्दो",
+        sentence: "रात को चाँद चमकता है। (माखा चन्दो चमकारी)",
       },
       sck: {
         script: "चांद",
-        translit: "Chaand",
+        translit: "Chand",
         langName: "Sadri (नागपुरी)",
+        ttsText: "चांद",
+        sentence: "रात को चाँद चमकता है। (राती चांद चमकेला)",
       },
     },
-    sampleSentence: "रात में चाँद चमकता है। (ᱧᱤᱫᱟᱹ ᱪᱟᱸᱫᱚ ᱡᱩᱞᱩᱜ ᱠᱟᱱᱟ)",
   },
   {
     id: "forest",
@@ -407,107 +518,137 @@ const FOUNDATION_CARDS = [
     icon: "forest",
     color: "#33691E",
     hindi: "जंगल / वन",
-    meaning: "Forest — साल और महुआ का वन",
+    meaning: "Forest — सारंडा और दलमा के समृद्ध जंगल",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱵᱤᱨ",
         translit: "Bir",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱵᱤᱨ",
+        sentence: "जंगल में पशु-पक्षी रहते हैं। (ᱵᱤᱨ ᱨᱮ ᱡᱤᱭᱟᱹᱞᱤ ᱠᱚ ᱛᱟᱦᱮᱸᱱᱟ)",
       },
       hoc: {
-        script: "ᱵᱤᱨ",
+        script: "बिर (𑢠𑢳𑢣)",
         translit: "Bir",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "बिर",
+        sentence: "जंगल में जानवर रहते हैं। (बिर रे जीवको तइकेन)",
       },
       unr: {
         script: "बिर",
         translit: "Bir",
         langName: "Mundari (मुंडारी)",
+        ttsText: "बिर",
+        sentence: "जंगल में जानवर रहते हैं। (बिर रे जीवको तइकेना)",
       },
       kru: {
-        script: "झल",
-        translit: "Jhal / Pachhri",
+        script: "टोड़ंग",
+        translit: "Torang",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "टोड़ंग",
+        sentence: "जंगल में जानवर रहते हैं। (टोड़ंग नू जानबर रअनार)",
       },
       sck: {
-        script: "बोन / झाड़",
-        translit: "Bon / Jhaar",
+        script: "जंगल / बोन",
+        translit: "Bon",
         langName: "Sadri (नागपुरी)",
+        ttsText: "बोन",
+        sentence: "जंगल में जानवर रहते हैं। (बोन में जानवर मन रहेना)",
       },
     },
-    sampleSentence: "जंगल से हमें फल और छाया मिलती है। (ᱵᱤᱨ ᱠᱷᱚᱱ ᱟᱞᱮ ᱡᱚ ᱟᱨ ᱩᱢᱩᱞ ᱧᱟᱢᱚᱜᱼᱟ)",
   },
   {
     id: "house",
     category: "परिवार (Family)",
-    icon: "cottage",
-    color: "#8D6E63",
+    icon: "home",
+    color: "#6D4C41",
     hindi: "घर / गृह",
-    meaning: "House/Home — हमारा निवास",
+    meaning: "House — हमारा निवास और शरण",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱚᱲᱟᱜ",
-        translit: "Oda:",
-        langName: "Santali (Ol Chiki)",
+        translit: "Ora:",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱚᱲᱟᱜ",
+        sentence: "यह हमारा घर है। (ᱱᱚᱣᱟ ᱫᱚ ᱟᱞᱮᱭᱟᱜ ᱚᱲᱟᱜ ᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱚᱣᱟᱜ",
+        script: "ओवाः (𑢱𑢷𑢡𑢬)",
         translit: "Owa:",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "ओवाः",
+        sentence: "यह हमारा घर है। (नेयाः अलेयाः ओवाः तना)",
       },
       unr: {
         script: "ओड़ाः",
-        translit: "Oda:",
+        translit: "Ora:",
         langName: "Mundari (मुंडारी)",
+        ttsText: "ओड़ाः",
+        sentence: "यह हमारा घर है। (नेयाः आलेयाः ओड़ाः तना)",
       },
       kru: {
         script: "एड़पा",
-        translit: "Edpa",
+        translit: "Erpa",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "एड़पा",
+        sentence: "यह हमारा घर है। (ईदन एम्है एड़पा हिकै)",
       },
       sck: {
-        script: "घर / कुँभा",
+        script: "घर / डेरा",
         translit: "Ghar",
         langName: "Sadri (नागपुरी)",
+        ttsText: "घर",
+        sentence: "यह हमारा घर है। (ई हमर घर हे)",
       },
     },
-    sampleSentence: "हम सब अपने घर में रहते हैं। (ᱟᱞᱮ ᱟᱞᱮᱭᱟᱜ ᱚᱲᱟᱜ ᱨᱮ ᱢᱮᱱᱟᱜ ᱞᱮᱭᱟ)",
   },
   {
     id: "father",
     category: "परिवार (Family)",
-    icon: "man",
-    color: "#3E2723",
+    icon: "face",
+    color: "#455A64",
     hindi: "पिता / बाबा",
-    meaning: "Father — परिवार के रक्षक",
+    meaning: "Father — परिवार के संरक्षक",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱵᱟᱵᱟ / ᱟᱯᱟᱛ",
         translit: "Baba / Apat",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱵᱟᱵᱟ",
+        sentence: "पिताजी खेत में काम करते हैं। (ᱵᱟᱵᱟ ᱠᱷᱮᱛ ᱨᱮ ᱠᱟᱹᱢᱤ ᱠᱟᱱᱟᱭ)",
       },
       hoc: {
-        script: "ᱟᱯᱟ",
+        script: "आपा (𑢡𑢪𑢡)",
         translit: "Apa",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "आपा",
+        sentence: "पिताजी काम करते हैं। (आपा पइटी तनए)",
       },
       unr: {
-        script: "आपा",
-        translit: "Aapa",
+        script: "आपा / बाबा",
+        translit: "Apa",
         langName: "Mundari (मुंडारी)",
+        ttsText: "आपा",
+        sentence: "पिताजी काम करते हैं। (आपा कामी तनाए)",
       },
       kru: {
-        script: "तम्बस",
-        translit: "Tambas",
+        script: "तंबस / बाबा",
+        translit: "Baba",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "बाबा",
+        sentence: "पिताजी काम करते हैं। (बाबा नलख नलदी)",
       },
       sck: {
-        script: "बाप / बाबाजी",
+        script: "बाप / अब्बा",
         translit: "Baap",
         langName: "Sadri (नागपुरी)",
+        ttsText: "बाप",
+        sentence: "पिताजी काम करते हैं। (बाबा काम करेला)",
       },
     },
-    sampleSentence: "पिताजी खेत में काम करते हैं। (ᱵᱟᱵᱟ ᱠᱷᱮᱛ ᱨᱮ ᱠᱟᱹᱢᱤ ᱠᱟᱱᱟᱭ)",
   },
   {
     id: "child",
@@ -515,435 +656,555 @@ const FOUNDATION_CARDS = [
     icon: "child_care",
     color: "#F06292",
     hindi: "बच्चा / बालक",
-    meaning: "Child — नन्हे विद्यार्थी",
+    meaning: "Child — विद्यालय के नन्हे शिक्षार्थी",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱜᱤᱫᱽᱨᱟᱹ",
         translit: "Gidra",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱜᱤᱫᱽᱨᱟᱹ",
+        sentence: "बच्चा मैदान में खेलता है। (ᱜᱤᱫᱽᱨᱟᱹ ᱴᱟᱺᱰᱤ ᱨᱮᱭ ᱮᱱᱮᱡ ᱠᱟᱱᱟ)",
       },
       hoc: {
-        script: "ᱦᱳᱱ",
+        script: "होन (𑢹𑣉𑢯)",
         translit: "Hon",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "होन",
+        sentence: "बच्चा खेलता है। (होन इनेङ तनए)",
       },
       unr: {
-        script: "होन",
-        translit: "Hon",
+        script: "हुन / गिदिरी",
+        translit: "Hun",
         langName: "Mundari (मुंडारी)",
+        ttsText: "हुन",
+        sentence: "बच्चा खेलता है। (हुन इनेङ तनाए)",
       },
       kru: {
-        script: "खद्दर",
-        translit: "Khaddar",
+        script: "ख़द्द",
+        translit: "Khadd",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "ख़द्द",
+        sentence: "बच्चा खेलता है। (ख़द्द बेचारी)",
       },
       sck: {
         script: "छौआ",
         translit: "Chhoua",
         langName: "Sadri (नागपुरी)",
+        ttsText: "छौआ",
+        sentence: "बच्चा खेलता है। (छौआ खेलत हे)",
       },
     },
-    sampleSentence: "बच्चे खेल के मैदान में दौड़ रहे हैं। (ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚ ᱮᱱᱮᱡ ᱴᱟᱺᱰᱤ ᱨᱮ ᱠᱚ ᱫᱟᱹᱲ ᱮᱫᱼᱟ)",
   },
   {
     id: "teacher",
     category: "विद्यालय (School)",
-    icon: "person_celebrate",
-    color: "#1E88E5",
+    icon: "co_present",
+    color: "#5E35B1",
     hindi: "शिक्षक / गुरुजी",
-    meaning: "Teacher — ज्ञान देने वाले",
+    meaning: "Teacher — बाल-सखा मार्गदर्शक",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱥᱮᱪᱮᱫᱤᱭᱟᱹ",
-        translit: "Sechediya",
-        langName: "Santali (Ol Chiki)",
+        script: "ᱥᱮᱪᱮᱫᱤᱭᱟᱹ / ᱢᱟᱪᱮᱛ",
+        translit: "Sechediya / Machet",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱥᱮᱪᱮᱫᱤᱭᱟᱹ",
+        sentence: "शिक्षक पाठ पढ़ा रहे हैं। (ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱯᱟᱴᱷ ᱮ ᱯᱟᱲᱦᱟᱣ ᱮᱫ ᱠᱚᱣᱟ)",
       },
       hoc: {
-        script: "ᱤᱛᱩᱱᱤᱭᱟᱹ",
-        translit: "Ituniya",
-        langName: "Ho (ᱦᱳ)",
+        script: "इटुनिया / माचो (𑢳𑢦𑢯𑢳𑢪)",
+        translit: "Ituniya / Macho",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "माचो",
+        sentence: "शिक्षक पढ़ा रहे हैं। (माचो पढ़ाव तनको)",
       },
       unr: {
-        script: "इतुनिया",
-        translit: "Ituniya",
+        script: "इटुनिकेन / माचो",
+        translit: "Ituniken / Macho",
         langName: "Mundari (मुंडारी)",
+        ttsText: "माचो",
+        sentence: "शिक्षक पढ़ा रहे हैं। (माचो पढ़ाव तनाको)",
       },
       kru: {
-        script: "शिक्षकसी",
-        translit: "Shikshaksi",
+        script: "पड़हाउ / मास्टर",
+        translit: "Parhau",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "पड़हाउ",
+        sentence: "शिक्षक पढ़ा रहे हैं। (पड़हाउ पढ़नर)",
       },
       sck: {
         script: "गुरुजी / मास्टर",
         translit: "Guruji",
         langName: "Sadri (नागपुरी)",
+        ttsText: "गुरुजी",
+        sentence: "शिक्षक पढ़ा रहे हैं। (गुरुजी पढ़ावत हैं)",
       },
     },
-    sampleSentence: "गुरुजी कक्षा में पढ़ा रहे हैं। (ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱠᱞᱟᱥ ᱨᱮ ᱯᱟᱲᱦᱟᱣ ᱮᱫ ᱠᱚᱣᱟᱭ)",
   },
   {
     id: "pen",
     category: "विद्यालय (School)",
     icon: "edit",
-    color: "#6D4C41",
+    color: "#1565C0",
     hindi: "कलम / लेखनी",
-    meaning: "Pen/Pencil — लिखने का साधन",
+    meaning: "Pen — विचार लिखने का माध्यम",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱠᱚᱞᱚᱢ",
         translit: "Kolom",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱠᱚᱞᱚᱢ",
+        sentence: "मैं कलम से लिखता हूँ। (ᱤᱧ ᱠᱚᱞᱚᱢ ᱛᱤᱧ ᱚᱞᱟ)",
       },
       hoc: {
-        script: "ᱠᱚᱞᱚᱢ",
+        script: "कलम (𑢤𑢳𑢡𑢮)",
         translit: "Kolom",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "कलम",
+        sentence: "कलम से लिखो। (कलम ते ओल मे)",
       },
       unr: {
         script: "कलम",
-        translit: "Kalam",
+        translit: "Kolom",
         langName: "Mundari (मुंडारी)",
+        ttsText: "कलम",
+        sentence: "कलम से लिखो। (कलम ते ओलोः मे)",
       },
       kru: {
         script: "कलम",
         translit: "Kalam",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "कलम",
+        sentence: "कलम से लिखो। (कलम ती टूड़ा)",
       },
       sck: {
         script: "कलम",
         translit: "Kalam",
         langName: "Sadri (नागपुरी)",
+        ttsText: "कलम",
+        sentence: "कलम से लिखो। (कलम से लिख)",
       },
     },
-    sampleSentence: "अपनी कॉपी में कलम से लिखो। (ᱟᱢᱟᱜ ᱠᱷᱟᱛᱟ ᱨᱮ ᱠᱚᱞᱚᱢ ᱛᱮ ᱚᱞ ᱢᱮ)",
   },
   {
     id: "cow",
     category: "पशु-पक्षी (Animals)",
-    icon: "pets",
-    color: "#689F38",
+    icon: "cruelty_free",
+    color: "#795548",
     hindi: "गाय / गऊ",
-    meaning: "Cow — दूध देने वाली माता",
+    meaning: "Cow — दूध देने वाला पालतू पशु",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱜᱟᱹᱭ",
         translit: "Gai",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱜᱟᱹᱭ",
+        sentence: "गाय हरी घास खाती है। (ᱜᱟᱹᱭ ᱦᱟᱹᱨᱤᱭᱟᱹᱲ ᱜᱷᱟᱸᱥ ᱮ ᱡᱚᱢᱟ)",
       },
       hoc: {
-        script: "ᱜᱟᱹᱭ",
+        script: "गई (𑢤𑢡𑢳)",
         translit: "Gai",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "गई",
+        sentence: "गाय घास खाती है। (गई घास जोमे तनए)",
       },
       unr: {
         script: "गई",
         translit: "Gai",
         langName: "Mundari (मुंडारी)",
+        ttsText: "गई",
+        sentence: "गाय घास खाती है। (गई घास जोमे तनाए)",
       },
       kru: {
-        script: "ओइ",
-        translit: "Oi",
+        script: "ओय / गाय",
+        translit: "Oy",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "ओय",
+        sentence: "गाय घास खाती है। (गाय घास मॊख़ी)",
       },
       sck: {
-        script: "गाय / गैया",
+        script: "गाय",
         translit: "Gaay",
         langName: "Sadri (नागपुरी)",
+        ttsText: "गाय",
+        sentence: "गाय घास खाती है। (गाय घास खाएला)",
       },
     },
-    sampleSentence: "सफेद गाय हरी घास चरती है। (ᱯᱩᱸᱰ ᱜᱟᱹᱭ ᱦᱟᱹᱨᱭᱟᱹᱲ ᱜᱷᱟᱥ ᱡᱚᱢ ᱮᱫᱼᱟ)",
   },
   {
     id: "dog",
     category: "पशु-पक्षी (Animals)",
-    icon: "sound_detection_dog_barking",
-    color: "#D84315",
+    icon: "pets",
+    color: "#8D6E63",
     hindi: "कुत्ता / श्वान",
-    meaning: "Dog — वफादार साथी",
+    meaning: "Dog — घर की रखवाली करने वाला साथी",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
         script: "ᱥᱮᱛᱟ",
         translit: "Seta",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱥᱮᱛᱟ",
+        sentence: "कुत्ता घर की रखवाली करता है। (ᱥᱮᱛᱟ ᱚᱲᱟᱜ ᱮ ᱨᱩᱠᱷᱤᱭᱟᱹᱭᱟ)",
       },
       hoc: {
-        script: "ᱥᱮᱛᱟ",
+        script: "सेता (𑢷𑢮𑢦𑢡)",
         translit: "Seta",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "सेता",
+        sentence: "कुत्ता घर देखता है। (सेता ओवाः नेले तनए)",
       },
       unr: {
         script: "सेता",
         translit: "Seta",
         langName: "Mundari (मुंडारी)",
+        ttsText: "सेता",
+        sentence: "कुत्ता घर देखता है। (सेता ओड़ाः लेले तनाए)",
       },
       kru: {
         script: "अल्ला",
         translit: "Alla",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "अल्ला",
+        sentence: "कुत्ता घर देखता है। (अल्ला एड़पा एरी)",
       },
       sck: {
         script: "कुकुर",
         translit: "Kukur",
         langName: "Sadri (नागपुरी)",
+        ttsText: "कुकुर",
+        sentence: "कुत्ता घर देखता है। (कुकुर घर देखेला)",
       },
     },
-    sampleSentence: "कुत्ता घर की रखवाली करता है। (ᱥᱮᱛᱟ ᱚᱲᱟᱜ ᱮ ᱨᱩᱠᱷᱤᱭᱟᱹᱭᱟ)",
   },
   {
     id: "fish",
     category: "पशु-पक्षी (Animals)",
     icon: "phishing",
-    color: "#0277BD",
+    color: "#0097A7",
     hindi: "मछली / मीन",
-    meaning: "Fish — जल की रानी",
+    meaning: "Fish — तालाब और नदी में तैरने वाली",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱦᱟᱠᱳ",
-        translit: "Hako",
-        langName: "Santali (Ol Chiki)",
-      },
-      hoc: {
         script: "ᱦᱟᱠᱩ",
         translit: "Haku",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱦᱟᱠᱩ",
+        sentence: "मछली पानी में तैरती है। (ᱦᱟᱠᱩ ᱫᱟᱜ ᱨᱮ ᱯᱟᱭᱨᱟᱜ ᱠᱟᱱᱟᱭ)",
+      },
+      hoc: {
+        script: "हाकु (𑢹𑢡𑢤𑢯)",
+        translit: "Haku",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "हाकु",
+        sentence: "मछली पानी में तैरती है। (हाकु दाः रे पायर तनए)",
       },
       unr: {
         script: "हाकु",
-        translit: "Haaku",
+        translit: "Haku",
         langName: "Mundari (मुंडारी)",
+        ttsText: "हाकु",
+        sentence: "मछली पानी में तैरती है। (हाकु दाः रे पायर तनाए)",
       },
       kru: {
-        script: "इंजो",
+        script: "ईंजो",
         translit: "Injo",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "ईंजो",
+        sentence: "मछली पानी में तैरती है। (ईंजो अम्म नू तैरारी)",
       },
       sck: {
-        script: "माछ",
-        translit: "Maachh",
+        script: "मछरी",
+        translit: "Machhari",
         langName: "Sadri (नागपुरी)",
+        ttsText: "मछरी",
+        sentence: "मछली पानी में तैरती है। (मछरी पानी में तैरेला)",
       },
     },
-    sampleSentence: "मछली तालाब में तैरती है। (ᱦᱟᱠᱳ ᱯᱩᱠᱷᱨᱤ ᱨᱮ ᱯᱟᱭᱨᱟᱜ ᱠᱟᱱᱟᱭ)",
   },
   {
     id: "farmer",
     category: "गाँव एवं समाज (Village & Community)",
     icon: "agriculture",
-    color: "#2E7D32",
+    color: "#558B2F",
     hindi: "किसान / कृषक",
-    meaning: "Farmer — अन्नदाता",
+    meaning: "Farmer — खेत जोतने वाला अन्नदाता",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱪᱟᱥᱤᱭᱟᱹ",
-        translit: "Chasiya",
-        langName: "Santali (Ol Chiki)",
-      },
-      hoc: {
         script: "ᱪᱟᱥᱤ",
         translit: "Chasi",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱪᱟᱥᱤ",
+        sentence: "किसान धान उपजाता है। (ᱪᱟᱥᱤ ᱦᱳᱲᱳᱭ ᱟᱨᱡᱟᱣᱟ)",
+      },
+      hoc: {
+        script: "चासी (𑢰𑢡𑢷𑢳)",
+        translit: "Chasi",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "चासी",
+        sentence: "किसान धान उपजाता है। (चासी बाबा रोवाए तनए)",
       },
       unr: {
         script: "चासी",
-        translit: "Chaasi",
+        translit: "Chasi",
         langName: "Mundari (मुंडारी)",
+        ttsText: "चासी",
+        sentence: "किसान धान उपजाता है। (चासी बाबा रोवेआ तनाए)",
       },
       kru: {
-        script: "किसान",
+        script: "किसान / उलस",
         translit: "Kisan",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "किसान",
+        sentence: "किसान धान उपजाता है। (किसान धान उथारनर)",
       },
       sck: {
-        script: "किसान / हरवाहा",
+        script: "किसान / जोतिहार",
         translit: "Kisan",
         langName: "Sadri (नागपुरी)",
+        ttsText: "किसान",
+        sentence: "किसान धान उपजाता है। (किसान धान रोपेला)",
       },
     },
-    sampleSentence: "किसान खेत में धान रोपता है। (ᱪᱟᱥᱤᱭᱟᱹ ᱠᱷᱮᱛ ᱨᱮ ᱦᱳᱲᱳᱭ ᱨᱚᱦᱚᱭ ᱮᱫᱼᱟ)",
   },
   {
     id: "market",
     category: "गाँव एवं समाज (Village & Community)",
     icon: "storefront",
-    color: "#F57F17",
+    color: "#EF6C00",
     hindi: "बाज़ार / हाट",
-    meaning: "Weekly Market — गाँव का हाट",
+    meaning: "Market — गाँव का साप्ताहिक बाज़ार",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱦᱟᱴ / ᱵᱟᱡᱟᱨ",
-        translit: "Haat / Bajar",
-        langName: "Santali (Ol Chiki)",
-      },
-      hoc: {
         script: "ᱦᱟᱴ",
         translit: "Haat",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱦᱟᱴ",
+        sentence: "गाँव में आज हाट लगा है। (ᱟᱹᱛᱩ ᱨᱮ ᱛᱮᱦᱮᱧ ᱦᱟᱴ ᱞᱟᱜᱟᱣ ᱟᱠᱟᱱᱟ)",
+      },
+      hoc: {
+        script: "हाट (𑢹𑢡𑢲)",
+        translit: "Haat",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "हाट",
+        sentence: "आज हाट लगा है। (तिशिंग हाट लागावयेना)",
       },
       unr: {
         script: "हाट",
         translit: "Haat",
         langName: "Mundari (मुंडारी)",
+        ttsText: "हाट",
+        sentence: "आज हाट लगा है। (तिशिंग हाट लागावयेना)",
       },
       kru: {
-        script: "पेठिया",
+        script: "पेठिया / हाट",
         translit: "Pethiya",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "पेठिया",
+        sentence: "आज हाट लगा है। (इन्ना पेठिया लग्गिया)",
       },
       sck: {
-        script: "हाट / पेठिया",
-        translit: "Haat / Pethiya",
+        script: "हाट / बजिया",
+        translit: "Haat",
         langName: "Sadri (नागपुरी)",
+        ttsText: "हाट",
+        sentence: "आज हाट लगा है। (आईज हाट लागल हे)",
       },
     },
-    sampleSentence: "हम सब शनिवार को हाट जाते हैं। (ᱟᱞᱮ ᱥᱩᱱᱤᱵᱟᱨ ᱦᱟᱴ ᱞᱮ ᱥᱮᱱᱚᱜᱼᱟ)",
   },
   {
     id: "food",
     category: "गाँव एवं समाज (Village & Community)",
     icon: "restaurant",
-    color: "#C62828",
+    color: "#C2185B",
     hindi: "भोजन / भात",
-    meaning: "Food/Meal — गरमा-गरम भोजन",
+    meaning: "Food — माँडी और भात (दैनिक आहार)",
+    pos: "संज्ञा (Noun)",
     dialects: {
       sat: {
-        script: "ᱫᱟᱠᱟ",
-        translit: "Daka",
-        langName: "Santali (Ol Chiki)",
+        script: "ᱫᱟᱠᱟ / ᱢᱟᱱᱰᱤ",
+        translit: "Daka / Mandi",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱫᱟᱠᱟ",
+        sentence: "हम सबने दोपहर का खाना खाया। (ᱟᱞᱮ ᱛᱤᱠᱤᱱ ᱫᱟᱠᱟ ᱞᱮ ᱡᱚᱢ ᱠᱮᱫᱟ)",
       },
       hoc: {
-        script: "ᱢᱟᱱᱰᱤ",
+        script: "मांडी (𑢫𑢡𑢢𑢵𑢳)",
         translit: "Mandi",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "मांडी",
+        sentence: "हमने खाना खाया। (अले मांडी जोमेयेना)",
       },
       unr: {
-        script: "मांडी",
-        translit: "Maandi",
+        script: "मंडी",
+        translit: "Mandi",
         langName: "Mundari (मुंडारी)",
+        ttsText: "मंडी",
+        sentence: "हमने खाना खाया। (आले मंडी जोमेयेना)",
       },
       kru: {
         script: "मंडी",
         translit: "Mandi",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "मंडी",
+        sentence: "हमने खाना खाया। (नाम मंडी मोक्खम)",
       },
       sck: {
-        script: "भात / खैना",
+        script: "भात / खाना",
         translit: "Bhaat",
         langName: "Sadri (नागपुरी)",
+        ttsText: "भात",
+        sentence: "हमने खाना खाया। (हमन भात खायली)",
       },
     },
-    sampleSentence: "हाथ धोकर भोजन करो। (ᱛᱤ ᱟᱹᱨᱩᱵ ᱠᱟᱛᱮ ᱫᱟᱠᱟ ᱡᱚᱢ ᱢᱮ)",
   },
   {
     id: "one",
     category: "गिनती (Numbers)",
     icon: "looks_one",
-    color: "#1565C0",
+    color: "#00796B",
     hindi: "एक (१)",
-    meaning: "One — संख्या एक",
+    meaning: "One — संख्या १",
+    pos: "संख्या (Number)",
     dialects: {
       sat: {
         script: "ᱢᱤᱫ (᱑)",
         translit: "Mid",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱢᱤᱫ",
+        sentence: "सूरज एक है। (ᱥᱤᱧ ᱪᱟᱸᱫᱚ ᱫᱚ ᱢᱤᱫᱴᱟᱝ ᱜᱮᱭᱟ)",
       },
       hoc: {
-        script: "ᱢᱤ (᱑)",
-        translit: "Mii",
-        langName: "Ho (ᱦᱳ)",
+        script: "मि (१) (𑢫𑢳)",
+        translit: "Mi",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "मि",
+        sentence: "सूरज एक है। (सिंगी मि तना)",
       },
       unr: {
         script: "मियद (१)",
         translit: "Miyad",
         langName: "Mundari (मुंडारी)",
+        ttsText: "मियद",
+        sentence: "सूरज एक है। (सिंगी मियद तना)",
       },
       kru: {
-        script: "ओन्त (१)",
-        translit: "Ont",
+        script: "ओन्द (१)",
+        translit: "Ond",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "ओन्द",
+        sentence: "सूरज एक है। (बीड़ी ओन्द रई)",
       },
       sck: {
         script: "एक (१)",
         translit: "Ek",
         langName: "Sadri (नागपुरी)",
+        ttsText: "एक",
+        sentence: "सूरज एक है। (सुरुज एक हे)",
       },
     },
-    sampleSentence: "आकाश में एक सूरज है। (ᱥᱮᱨᱢᱟ ᱨᱮ ᱢᱤᱫᱴᱟᱝ ᱪᱟᱸᱫᱚ ᱢᱮᱱᱟᱭᱟ)",
   },
   {
     id: "two",
     category: "गिनती (Numbers)",
     icon: "looks_two",
-    color: "#6A1B9A",
+    color: "#E65100",
     hindi: "दो (२)",
-    meaning: "Two — संख्या दो",
+    meaning: "Two — संख्या २",
+    pos: "संख्या (Number)",
     dialects: {
       sat: {
         script: "ᱵᱟᱨ (᱒)",
         translit: "Bar",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱵᱟᱨ",
+        sentence: "हमारे दो हाथ हैं। (ᱟᱵᱚᱣᱟᱜ ᱵᱟᱨᱭᱟ ᱛᱤ ᱢᱮᱱᱟᱜᱼᱟ)",
       },
       hoc: {
-        script: "ᱵᱟᱨᱤᱭᱟ (᱒)",
+        script: "बारिया (२) (𑢠𑢡𑢣𑢳𑢪)",
         translit: "Bariya",
-        langName: "Ho (ᱦᱳ)",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "बारिया",
+        sentence: "हमारे दो हाथ हैं। (अबूआः बारिया ती मेनाः)",
       },
       unr: {
         script: "बारिया (२)",
-        translit: "Baariya",
+        translit: "Bariya",
         langName: "Mundari (मुंडारी)",
+        ttsText: "बारिया",
+        sentence: "हमारे दो हाथ हैं। (आबूआः बारिया ती मेनाः)",
       },
       kru: {
-        script: "इरब (२)",
-        translit: "Irb",
+        script: "इंड (२)",
+        translit: "Ind",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "इंड",
+        sentence: "हमारे दो हाथ हैं। (नम्है इंड ख़ेक्खा रई)",
       },
       sck: {
-        script: "दुई (२)",
-        translit: "Dui",
+        script: "दूई (२)",
+        translit: "Duee",
         langName: "Sadri (नागपुरी)",
+        ttsText: "दूई",
+        sentence: "हमारे दो हाथ हैं। (हमन कर दूई हाथ हे)",
       },
     },
-    sampleSentence: "मेरे पास दो आँखें हैं। (ᱤᱧᱟᱜ ᱵᱟᱨᱭᱟ ᱢᱮᱫ ᱢᱮᱱᱟᱜᱼᱟ)",
   },
   {
     id: "three",
     category: "गिनती (Numbers)",
     icon: "looks_3",
-    color: "#00838F",
+    color: "#6A1B9A",
     hindi: "तीन (३)",
-    meaning: "Three — संख्या तीन",
+    meaning: "Three — संख्या ३",
+    pos: "संख्या (Number)",
     dialects: {
       sat: {
         script: "ᱯᱮ (᱓)",
         translit: "Pe",
-        langName: "Santali (Ol Chiki)",
+        langName: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)",
+        ttsText: "ᱯᱮ",
+        sentence: "तिरंगे में तीन रंग हैं। (ᱛᱤᱨᱟᱝᱜᱟ ᱨᱮ ᱯᱮᱭᱟ ᱨᱚᱝ ᱢᱮᱱᱟᱜᱼᱟ)",
       },
       hoc: {
-        script: "ᱟᱯᱤᱭᱟ (᱓)",
-        translit: "Apiya",
-        langName: "Ho (ᱦᱳ)",
+        script: "आपिया (३) (𑢡𑢪𑢳𑢪)",
+        translit: "Aapiya",
+        langName: "Ho (हो / 𑢹𑣉𑣉)",
+        ttsText: "आपिया",
+        sentence: "तीन रंग हैं। (आपिया रंग मेनाः)",
       },
       unr: {
         script: "आपिया (३)",
         translit: "Aapiya",
         langName: "Mundari (मुंडारी)",
+        ttsText: "आपिया",
+        sentence: "तीन रंग हैं। (आपिया रंग मेनाः)",
       },
       kru: {
         script: "मुंद (३)",
         translit: "Mund",
         langName: "Kurukh (कुड़ुख़)",
+        ttsText: "मुंद",
+        sentence: "तीन रंग हैं। (मुंद रंग रई)",
       },
       sck: {
         script: "तीन (३)",
         translit: "Teen",
         langName: "Sadri (नागपुरी)",
+        ttsText: "तीन",
+        sentence: "तीन रंग हैं। (तीन रंग हे)",
       },
     },
-    sampleSentence: "तिरंगे में तीन रंग हैं। (ᱛᱤᱨᱟᱝᱜᱟ ᱨᱮ ᱯᱮᱭᱟ ᱨᱚᱝ ᱢᱮᱱᱟᱜᱼᱟ)",
   },
 ];
 
-export default function Flashcards({ lessonText, currentGrade = 2 }) {
+export default function Flashcards({ lessonText = "", currentGrade = 2 }) {
   const [selectedDialect, setSelectedDialect] = useState("sat");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [activeCardIndex, setActiveCardIndex] = useState(0);
@@ -951,16 +1212,71 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
   const [audioLoading, setAudioLoading] = useState(false);
   const [activeAudioBlob, setActiveAudioBlob] = useState(null);
   const [audioError, setAudioError] = useState("");
+  const [isShuffle, setIsShuffle] = useState(false);
+  const [shuffleOrder, setShuffleOrder] = useState(null);
+
+  // Lesson context matching: find cards that match any word in lessonText
+  const lessonMatchingCardIds = useMemo(() => {
+    if (!lessonText || !lessonText.trim()) return new Set();
+    const words = lessonText.toLowerCase().split(/[\s,।!?.]+/).filter((w) => w.length > 1);
+    const matches = new Set();
+    for (const card of FOUNDATION_CARDS) {
+      const hindiParts = card.hindi.toLowerCase().split(/[\s/()]+/);
+      if (hindiParts.some((p) => words.includes(p))) {
+        matches.add(card.id);
+      }
+    }
+    return matches;
+  }, [lessonText]);
 
   // Categories extraction
-  const categories = ["all", ...new Set(FOUNDATION_CARDS.map((c) => c.category))];
-  const filteredCards = selectedCategory === "all"
-    ? FOUNDATION_CARDS
-    : FOUNDATION_CARDS.filter((c) => c.category === selectedCategory);
+  const categories = useMemo(() => {
+    const set = ["all"];
+    if (lessonMatchingCardIds.size > 0) {
+      set.push("lesson");
+    }
+    for (const c of FOUNDATION_CARDS) {
+      if (!set.includes(c.category)) set.push(c.category);
+    }
+    return set;
+  }, [lessonMatchingCardIds]);
 
-  const safeIndex = activeCardIndex >= filteredCards.length ? 0 : activeCardIndex;
-  const card = filteredCards[safeIndex] || FOUNDATION_CARDS[0];
+  // Filtered Cards
+  const baseCards = useMemo(() => {
+    if (selectedCategory === "all") return FOUNDATION_CARDS;
+    if (selectedCategory === "lesson") return FOUNDATION_CARDS.filter((c) => lessonMatchingCardIds.has(c.id));
+    return FOUNDATION_CARDS.filter((c) => c.category === selectedCategory);
+  }, [selectedCategory, lessonMatchingCardIds]);
+
+  // Handle Shuffle
+  const cards = useMemo(() => {
+    if (!isShuffle || !shuffleOrder) return baseCards;
+    return [...baseCards].sort((a, b) => (shuffleOrder[a.id] || 0) - (shuffleOrder[b.id] || 0));
+  }, [baseCards, isShuffle, shuffleOrder]);
+
+  const safeIndex = activeCardIndex >= cards.length ? 0 : activeCardIndex;
+  const card = cards[safeIndex] || FOUNDATION_CARDS[0];
   const dialectInfo = card.dialects[selectedDialect] || card.dialects.sat;
+
+  function handleToggleShuffle() {
+    if (!isShuffle) {
+      const order = {};
+      baseCards.forEach((c) => {
+        order[c.id] = Math.random();
+      });
+      setShuffleOrder(order);
+      setIsShuffle(true);
+      setActiveCardIndex(0);
+      setIsFlipped(false);
+    } else {
+      setIsShuffle(false);
+      setShuffleOrder(null);
+      setActiveCardIndex(0);
+      setIsFlipped(false);
+    }
+    setActiveAudioBlob(null);
+    setAudioError("");
+  }
 
   async function handlePlayCardAudio() {
     setAudioLoading(true);
@@ -968,15 +1284,15 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
     setActiveAudioBlob(null);
 
     try {
-      // If Santali, speak the Ol Chiki target script
-      const textToSpeak = selectedDialect === "sat"
-        ? dialectInfo.script
-        : card.hindi; // Phrase bank checks Hindi source
+      // Speak the authentic native mother-tongue word
+      // For Santali: pass Ol Chiki script (e.g. ᱫᱟᱜ)
+      // For Ho, Mundari, Kurukh, Sadri: pass the clean Devanagari word (e.g. दा, अम्म, पानी)
+      const textToSpeak = dialectInfo.ttsText || dialectInfo.script.replace(/\s*\([^)]*\)/g, "").split("/")[0].trim();
       const res = await speak(textToSpeak, selectedDialect);
       if (res.kind === "audio") {
         setActiveAudioBlob(res.blob);
       } else if (res.kind === "phrase_bank_only") {
-        setAudioError(res.reason || "Phrase bank audio unavailable for single word.");
+        setAudioError(res.reason || "Audio unavailable for this entry.");
       }
     } catch (err) {
       setAudioError("Audio error: " + err.message);
@@ -989,14 +1305,14 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
     setIsFlipped(false);
     setActiveAudioBlob(null);
     setAudioError("");
-    setActiveCardIndex((prev) => (prev + 1) % filteredCards.length);
+    setActiveCardIndex((prev) => (prev + 1) % cards.length);
   }
 
   function handlePrev() {
     setIsFlipped(false);
     setActiveAudioBlob(null);
     setAudioError("");
-    setActiveCardIndex((prev) => (prev - 1 + filteredCards.length) % filteredCards.length);
+    setActiveCardIndex((prev) => (prev - 1 + cards.length) % cards.length);
   }
 
   return (
@@ -1009,7 +1325,7 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
         Visual Bilingual Flashcards <span lang="hi">(सचित्र शब्द-पत्ती)</span>
       </h1>
       <p className="screen-subtitle">
-        Foundational Vocabulary in Authentic Mother-Tongue Scripts for Classroom Drills and Early Readers.
+        Foundational Vocabulary in Authentic Mother-Tongue Scripts for Classroom Drills, Circle Time & Early Readers.
       </p>
 
       {/* Category & Dialect Selector Bars */}
@@ -1017,7 +1333,7 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
         <div className="dialect-pills-bar" role="tablist" aria-label="Select Target Dialect">
           {[
             { code: "sat", name: "Santali (Ol Chiki ᱥᱟᱱᱛᱟᱲᱤ)" },
-            { code: "hoc", name: "Ho (ᱦᱳ ᱡᱟᱜᱟᱨ)" },
+            { code: "hoc", name: "Ho (हो / 𑢹𑣉𑣉)" },
             { code: "unr", name: "Mundari (मुंडारी)" },
             { code: "kru", name: "Kurukh (कुड़ुख़)" },
             { code: "sck", name: "Sadri (नागपुरी)" },
@@ -1039,22 +1355,44 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
           ))}
         </div>
 
-        <button
-          type="button"
-          className="button button--secondary tactile-btn-secondary"
-          onClick={() => window.print()}
-          title="Print flashcards for classroom circle drill"
-        >
-          <span className="material-symbols-outlined text-base">print</span>
-          <span>Print Cards</span>
-        </button>
+        <div className="flashcards-tool-actions">
+          <button
+            type="button"
+            className={`button button--secondary tactile-btn-secondary ${isShuffle ? "button--active" : ""}`}
+            onClick={handleToggleShuffle}
+            title="Randomize card sequence for classroom quiz"
+          >
+            <span className="material-symbols-outlined text-base">shuffle</span>
+            <span>{isShuffle ? "यादृच्छिक (Shuffled)" : "शफल (Shuffle)"}</span>
+          </button>
+
+          <button
+            type="button"
+            className="button button--secondary tactile-btn-secondary"
+            onClick={() => window.print()}
+            title="Print flashcards for classroom circle drill"
+          >
+            <span className="material-symbols-outlined text-base">print</span>
+            <span>Print Cards</span>
+          </button>
+        </div>
       </div>
 
       {/* Category Filter Pills */}
       <div className="flashcards-category-bar" role="tablist" aria-label="Filter by Topic">
         {categories.map((cat) => {
-          const label = cat === "all" ? "सभी विषय (All 24 Cards)" : cat;
-          const count = cat === "all" ? FOUNDATION_CARDS.length : FOUNDATION_CARDS.filter((c) => c.category === cat).length;
+          let label = cat;
+          let count = 0;
+          if (cat === "all") {
+            label = "सभी शब्द (All 26 Cards)";
+            count = FOUNDATION_CARDS.length;
+          } else if (cat === "lesson") {
+            label = "✨ इस पाठ से संबंधित (In Lesson)";
+            count = lessonMatchingCardIds.size;
+          } else {
+            count = FOUNDATION_CARDS.filter((c) => c.category === cat).length;
+          }
+
           return (
             <button
               key={cat}
@@ -1117,9 +1455,9 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
               </div>
 
               <div className="card-bottom-footer">
-                <span className="card-class-tag">Class {currentGrade} Vocabulary</span>
+                <span className="card-class-tag">{card.pos || "संज्ञा"} · Class {currentGrade}</span>
                 <span className="card-index-count">
-                  {safeIndex + 1} / {filteredCards.length}
+                  {safeIndex + 1} / {cards.length}
                 </span>
               </div>
             </div>
@@ -1149,7 +1487,7 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
 
               <div className="card-sentence-box" lang="hi">
                 <span className="sentence-label">कक्षा प्रयोग (Classroom Usage):</span>
-                <p className="sentence-text">{card.sampleSentence}</p>
+                <p className="sentence-text">{dialectInfo.sentence}</p>
               </div>
 
               <div className="card-action-bar" onClick={(e) => e.stopPropagation()}>
@@ -1162,13 +1500,13 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
                   <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
                     volume_up
                   </span>
-                  <span>{audioLoading ? "Generating Speech…" : "बोलकर सुनाएं (Listen Pronunciation)"}</span>
+                  <span>{audioLoading ? "ध्वनि तैयार हो रही है…" : "बोलकर सुनाएं (Pronounce)"}</span>
                 </button>
               </div>
 
               {activeAudioBlob && (
                 <div className="card-player-embed" onClick={(e) => e.stopPropagation()}>
-                  <AudioPlayer blob={activeAudioBlob} label={`${card.hindi} pronunciation`} />
+                  <AudioPlayer blob={activeAudioBlob} label={`${card.hindi} native pronunciation`} />
                 </div>
               )}
 
@@ -1186,11 +1524,11 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
             aria-label="Previous card"
           >
             <span className="material-symbols-outlined text-base">arrow_back</span>
-            <span>Previous Card</span>
+            <span>पिछला कार्ड (Prev)</span>
           </button>
 
           <span className="card-counter-display">
-            Card <strong>{safeIndex + 1}</strong> of {filteredCards.length}
+            Card <strong>{safeIndex + 1}</strong> of {cards.length}
           </span>
 
           <button
@@ -1199,7 +1537,7 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
             onClick={handleNext}
             aria-label="Next card"
           >
-            <span>Next Card</span>
+            <span>अगला कार्ड (Next)</span>
             <span className="material-symbols-outlined text-base">arrow_forward</span>
           </button>
         </div>
@@ -1218,10 +1556,10 @@ export default function Flashcards({ lessonText, currentGrade = 2 }) {
             <strong>देखें और पहचानें (Step 1):</strong> कार्ड का अगला भाग दिखाकर बच्चों से हिंदी शब्द और चित्र पहचानने को कहें।
           </li>
           <li>
-            <strong>बोली में अनुवाद (Step 2):</strong> कार्ड पलटकर Ol Chiki या स्थानीय लिपि में लिखा शब्द दिखाएं।
+            <strong>मातृभाषा में उच्चारण (Step 2):</strong> कार्ड पलटकर स्थानीय लिपि में लिखा शब्द और उच्चारण दिखाएं।
           </li>
           <li>
-            <strong>ऑडियो उच्चारण (Step 3):</strong> "बोलकर सुनाएं" बटन दबाएं और बच्चों को तीन बार एक साथ दोहराने को कहें (Classroom Chanting)।
+            <strong>ध्वनि अभ्यास (Step 3):</strong> "बोलकर सुनाएं" बटन दबाएं और बच्चों को तीन बार एक साथ दोहराने को कहें (Classroom Chanting & Repetition)।
           </li>
         </ol>
       </div>
