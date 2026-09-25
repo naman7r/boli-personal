@@ -116,26 +116,38 @@ export default function Capture({
   const SAMPLE_LESSONS = [
     { id: "custom", label: "Select NCERT / JCERT Lesson Preset…", text: "", grade: 2 },
     {
-      id: "butterfly",
-      label: "Rimjhim Class 2: तितली और कली (कविता)",
-      text: "हरी डाल पर लगी हुई थी नन्ही सुंदर एक कली। तितली उससे आकर बोली तुम लगती हो बड़ी भली।",
-      grade: 2,
-    },
-    {
-      id: "rabbit",
-      label: "Jharkhand Balvatika: नटखट खरगोश और गाजर",
-      text: "आज कक्षा में सब बच्चे बहुत खुश हैं। नन्हे खरगोश ने मीठे गाजर का हलवा अपनी माँ के साथ मिलकर बनाया। जंगल के सारे दोस्त मिलकर दावत खाएंगे।",
+      id: "class1_env",
+      label: "Jharkhand Balvatika (कक्षा 1): पेड़ और छाया (हमारा परिवेश)",
+      shortTitle: "कक्षा 1: पेड़ और छाया",
+      badge: "Class 1 · FLN Foundational",
+      icon: "park",
+      text: "पेड़ हमें मीठे फल और शीतल छाया देते हैं। चिड़िया पेड़ों की डाल पर अपना घोंसला बनाती हैं।",
       grade: 1,
     },
     {
-      id: "water",
-      label: "Parivesh Class 3: जल ही जीवन है (पर्यावरण)",
-      text: "जल ही हमारा जीवन है। कुएं और चापाकल का पानी हमेशा साफ रखना चाहिए। हमें मिलकर पानी बचाना है।",
+      id: "class2_math",
+      label: "JCERT Rimjhim (कक्षा 2): गाँव का तालाब (गिनती व दैनिक जीवन)",
+      shortTitle: "कक्षा 2: गाँव का तालाब",
+      badge: "Class 2 · FLN Math & Daily Life",
+      icon: "water",
+      text: "गाँव के तालाब में पाँच बत्तख तैर रही हैं। दो बत्तख किनारे पर धूप सेक रही हैं।",
+      grade: 2,
+    },
+    {
+      id: "class3_science",
+      label: "JCERT Parivesh (कक्षा 3): जल ही जीवन है (स्वास्थ्य व पर्यावरण)",
+      shortTitle: "कक्षा 3: जल ही जीवन है",
+      badge: "Class 3 · Hygiene & Health",
+      icon: "clean_hands",
+      text: "जल ही हमारा सच्चा जीवन है। कुएं और चापाकल का पानी हमेशा साफ रखना चाहिए। हमें मिलकर पानी बचाना है।",
       grade: 3,
     },
     {
-      id: "folk",
-      label: "Mundari / Santhali Folk: करम परब और सरहुल",
+      id: "class4_folk",
+      label: "Jharkhand Tribal Culture (कक्षा 4): करम परब और सरहुल",
+      shortTitle: "कक्षा 4: करम व सरहुल",
+      badge: "Class 4 · Tribal Culture & FLN",
+      icon: "celebration",
       text: "सरहुल के पावन पर्व पर सखुआ के पेड़ों पर नए फूल खिलते हैं। गाँव के सभी बच्चे और बड़े मांदर की थाप पर मिलकर नाचते हैं।",
       grade: 4,
     },
@@ -389,6 +401,45 @@ export default function Capture({
                   </span>
                   Class {grade} Pacing
                 </span>
+              </div>
+
+              {/* 1-Click JCERT Official Textbook Presets for Instant Live Demo */}
+              <div className="jcert-presets-shelf">
+                <div className="jcert-presets-header">
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm" style={{ color: "#fea619", fontVariationSettings: "'FILL' 1" }}>
+                      auto_stories
+                    </span>
+                    <strong className="jcert-presets-title">1-क्लिक JCERT पाठ चयन (Instant Textbook Samples):</strong>
+                  </div>
+                  <span className="jcert-presets-subtext">Click any sample to load verified Class 1–4 curriculum</span>
+                </div>
+                <div className="jcert-preset-chips-grid">
+                  {SAMPLE_LESSONS.filter((p) => p.id !== "custom").map((p) => {
+                    const isSelected = hindiText === p.text;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className={`jcert-preset-chip ${isSelected ? "active" : ""}`}
+                        onClick={() => {
+                          setHindiText(p.text);
+                          setGrade(p.grade);
+                          setSourceType("typed");
+                          setChapterSentences([]);
+                        }}
+                        title={`Click to load ${p.label}`}
+                      >
+                        <div className="preset-chip-top">
+                          <span className="material-symbols-outlined text-sm preset-chip-icon">{p.icon}</span>
+                          <span className="preset-chip-badge">{p.badge}</span>
+                        </div>
+                        <div className="preset-chip-title">{p.shortTitle}</div>
+                        <div className="preset-chip-preview">"{p.text.slice(0, 44)}…"</div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

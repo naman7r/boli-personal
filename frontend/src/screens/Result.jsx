@@ -409,6 +409,12 @@ export default function Result({
               <p className="ps-deliverable-desc">
                 Authentic village-synthesized speech waveforms packaged with an offline HTML player for zero-connectivity classrooms.
               </p>
+              <div style={{ marginTop: "6px" }}>
+                <span className="verified-voice-badge">
+                  <span className="material-symbols-outlined text-xs">verified</span>
+                  DIET L1 Native Phonetics Protocol
+                </span>
+              </div>
             </div>
             <button
               type="button"

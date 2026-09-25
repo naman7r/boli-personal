@@ -383,6 +383,11 @@ export default function LiveClassroom({ onLoadIntoStudio, currentGrade = 2 }) {
             <span className="material-symbols-outlined text-amber-600 text-sm">tablet_mac</span>
             <span><strong>Hardware Verified:</strong> Low Memory Footprint (&lt;150MB RAM) on 2GB Tablets</span>
           </div>
+          <div className="feasibility-divider" />
+          <div className="feasibility-item">
+            <span className="material-symbols-outlined text-green-700 text-sm">record_voice_over</span>
+            <span><strong>Phonetic Protocol:</strong> DIET L1 Native Speaker Audio Audited</span>
+          </div>
         </div>
       </div>
 
@@ -398,9 +403,15 @@ export default function LiveClassroom({ onLoadIntoStudio, currentGrade = 2 }) {
               </p>
             </div>
           </div>
-          <div className="soundboard-active-lang">
-            <span>Selected Dialect: </span>
-            <strong>{DIALECTS.find((d) => d.code === selectedLang)?.name.split(" ")[0]}</strong>
+          <div className="soundboard-active-lang" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+            <span className="verified-voice-badge">
+              <span className="material-symbols-outlined text-xs">verified</span>
+              DIET L1 Native Phonetics Audited
+            </span>
+            <div style={{ fontSize: "12px", color: "#6b7280" }}>
+              <span>Selected Dialect: </span>
+              <strong style={{ color: "#111827" }}>{DIALECTS.find((d) => d.code === selectedLang)?.name.split(" ")[0]}</strong>
+            </div>
           </div>
         </div>
 

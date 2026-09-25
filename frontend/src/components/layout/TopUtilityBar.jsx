@@ -14,6 +14,7 @@ export default function TopUtilityBar({ activeLang, onToggleLang }) {
   const [showTabletModal, setShowTabletModal] = useState(false);
   const [offlineDownloadStatus, setOfflineDownloadStatus] = useState(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showGovernanceModal, setShowGovernanceModal] = useState(false);
 
   function handleDownloadOfflineVillagePack() {
     setOfflineDownloadStatus("packaging");
@@ -213,6 +214,30 @@ export default function TopUtilityBar({ activeLang, onToggleLang }) {
           >
             <span className="material-symbols-outlined text-xs">tablet_mac</span>
             <span>📱 2GB Tablet & Offline Mode</span>
+          </button>
+
+          {/* State Pilot & DIET Oversight Inspector Button */}
+          <button
+            type="button"
+            className="scale-btn"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 9px",
+              fontSize: "12px",
+              borderRadius: "4px",
+              background: "rgba(56, 189, 248, 0.18)",
+              border: "1px solid rgba(56, 189, 248, 0.45)",
+              color: "#bae6fd",
+              fontWeight: "600",
+              cursor: "pointer",
+            }}
+            onClick={() => setShowGovernanceModal(true)}
+            title="Inspect 5-District JCERT Pilot & DIET Review Protocol"
+          >
+            <span className="material-symbols-outlined text-xs">account_balance</span>
+            <span>🏛️ State Pilot & DIET Oversight</span>
           </button>
 
           {/* Backend Connection Status Badge & Modal Trigger */}
@@ -787,6 +812,191 @@ export default function TopUtilityBar({ activeLang, onToggleLang }) {
                 onClick={() => setShowHelpModal(false)}
               >
                 <span>समझ गया / Close Guide</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* State Pilot & DIET Oversight Modal */}
+      {showGovernanceModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.72)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999,
+            padding: "16px",
+          }}
+          onClick={() => setShowGovernanceModal(false)}
+        >
+          <div
+            style={{
+              background: "#18181b",
+              color: "#f4f4f5",
+              padding: "24px",
+              borderRadius: "14px",
+              maxWidth: "740px",
+              width: "100%",
+              maxHeight: "88vh",
+              overflowY: "auto",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.7)",
+              border: "1px solid rgba(56, 189, 248, 0.3)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "18px",
+                borderBottom: "1px solid #27272a",
+                paddingBottom: "14px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "32px", color: "#38bdf8" }}>
+                  account_balance
+                </span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "19px", color: "#fff", fontWeight: 700 }}>
+                    झारखण्ड राज्य शैक्षिक पायलट व DIET समीक्षा तंत्र
+                  </h3>
+                  <p style={{ margin: "3px 0 0", fontSize: "12px", color: "#7dd3fc" }}>
+                    JCERT PALASH MTB-MLE Institutional Governance & Scalability Blueprint
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGovernanceModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#a1a1aa",
+                  cursor: "pointer",
+                  padding: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                aria-label="Close Governance Modal"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {/* Content Sections */}
+            <div style={{ display: "grid", gap: "14px", marginBottom: "20px" }}>
+              {/* Section 1: 5-District Phase 1 Matrix */}
+              <div style={{ background: "#27272a", borderRadius: "10px", padding: "14px 16px", borderLeft: "4px solid #38bdf8" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span className="material-symbols-outlined text-sm" style={{ color: "#38bdf8" }}>domain</span>
+                    <strong style={{ fontSize: "14px", color: "#e0f2fe" }}>1. चरण-1 पायलट कार्यक्षेत्र (5-District Pilot Matrix · 1,885 Primary Schools)</strong>
+                  </div>
+                  <span style={{ fontSize: "11px", fontWeight: "700", color: "#38bdf8", background: "rgba(56,189,248,0.12)", padding: "2px 8px", borderRadius: "4px" }}>
+                    1,885 विद्यालय
+                  </span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "8px", marginTop: "10px" }}>
+                  <div style={{ background: "#1e1e24", padding: "8px 10px", borderRadius: "6px", border: "1px solid #3f3f46" }}>
+                    <strong style={{ fontSize: "12px", color: "#fef08a" }}>पश्चिमी सिंहभूम (चाईबासा)</strong>
+                    <div style={{ fontSize: "11px", color: "#d4d4d8", marginTop: "2px" }}>512 स्कूल · हो (Ho) भाषा कॉरिडोर</div>
+                    <div style={{ fontSize: "10px", color: "#9ca3af" }}>DIET चाईबासा नोडल केंद्र</div>
+                  </div>
+                  <div style={{ background: "#1e1e24", padding: "8px 10px", borderRadius: "6px", border: "1px solid #3f3f46" }}>
+                    <strong style={{ fontSize: "12px", color: "#fef08a" }}>दुमका (Santhal Pargana)</strong>
+                    <div style={{ fontSize: "11px", color: "#d4d4d8", marginTop: "2px" }}>418 स्कूल · संथाली (Ol Chiki)</div>
+                    <div style={{ fontSize: "10px", color: "#9ca3af" }}>DIET दुमका नोडल केंद्र</div>
+                  </div>
+                  <div style={{ background: "#1e1e24", padding: "8px 10px", borderRadius: "6px", border: "1px solid #3f3f46" }}>
+                    <strong style={{ fontSize: "12px", color: "#fef08a" }}>खूंटी (Khunti)</strong>
+                    <div style={{ fontSize: "11px", color: "#d4d4d8", marginTop: "2px" }}>289 स्कूल · मुंडारी (Mundari)</div>
+                    <div style={{ fontSize: "10px", color: "#9ca3af" }}>DIET खूंटी नोडल केंद्र</div>
+                  </div>
+                  <div style={{ background: "#1e1e24", padding: "8px 10px", borderRadius: "6px", border: "1px solid #3f3f46" }}>
+                    <strong style={{ fontSize: "12px", color: "#fef08a" }}>लातेहार व लोहरदगा</strong>
+                    <div style={{ fontSize: "11px", color: "#d4d4d8", marginTop: "2px" }}>324 स्कूल · कुड़ुख़ (Kurukh / Oraon)</div>
+                    <div style={{ fontSize: "10px", color: "#9ca3af" }}>DIET लातेहार नोडल केंद्र</div>
+                  </div>
+                  <div style={{ background: "#1e1e24", padding: "8px 10px", borderRadius: "6px", border: "1px solid #3f3f46" }}>
+                    <strong style={{ fontSize: "12px", color: "#fef08a" }}>राँची ग्रामीण (Ranchi)</strong>
+                    <div style={{ fontSize: "11px", color: "#d4d4d8", marginTop: "2px" }}>342 स्कूल · सादरी (Nagpuri) संपर्क</div>
+                    <div style={{ fontSize: "10px", color: "#9ca3af" }}>राज्य JCERT मुख्यालय</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: 3-Tier Dialect Moderation Workflow */}
+              <div style={{ background: "#27272a", borderRadius: "10px", padding: "14px 16px", borderLeft: "4px solid #22c55e" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                  <span className="material-symbols-outlined text-sm" style={{ color: "#4ade80" }}>published_with_changes</span>
+                  <strong style={{ fontSize: "14px", color: "#86efac" }}>2. त्रि-स्तरीय भाषा समीक्षा व संशोधन तंत्र (DIET Moderation Pipeline)</strong>
+                </div>
+                <div style={{ display: "grid", gap: "8px", fontSize: "12px", color: "#d4d4d8", lineHeight: 1.5 }}>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <span style={{ background: "#15803d", color: "#fff", padding: "1px 6px", borderRadius: "4px", fontWeight: "700", height: "fit-content" }}>स्तर 1</span>
+                    <div><strong>कक्षा से सुझाव (Teacher Input):</strong> शिक्षक पाठ के नीचे दिए गए "Suggest Correction" बटन से स्थानीय बोली का सुझाव दर्ज करते हैं।</div>
+                  </div>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <span style={{ background: "#0284c7", color: "#fff", padding: "1px 6px", borderRadius: "4px", fontWeight: "700", height: "fit-content" }}>स्तर 2</span>
+                    <div><strong>DIET भाषा प्रकोष्ठ सत्यापन (DIET Verification):</strong> जिला शिक्षा प्रशिक्षण संस्थान (DIET) के जनजातीय भाषा विशेषज्ञ व CIIL दिशानिर्देशों के तहत ध्वनि शुद्धता जांची जाती है।</div>
+                  </div>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <span style={{ background: "#9333ea", color: "#fff", padding: "1px 6px", borderRadius: "4px", fontWeight: "700", height: "fit-content" }}>स्तर 3</span>
+                    <div><strong>मासिक CRC ऑफ़लाइन वितरण (Offline SD Card Sync):</strong> स्वीकृत शब्दों को स्वतः संकलित कर मासिक क्लस्टर संकुल (CRC) बैठक में ऑफ़लाइन SD कार्ड द्वारा स्कूलों में अपडेट किया जाता है।</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: State Platform Integration */}
+              <div style={{ background: "#27272a", borderRadius: "10px", padding: "14px 16px", borderLeft: "4px solid #f59e0b" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                  <span className="material-symbols-outlined text-sm" style={{ color: "#fbbf24" }}>integration_instructions</span>
+                  <strong style={{ fontSize: "14px", color: "#fde68a" }}>3. राज्य पोर्टल e-Vidhyavahini व U-DISE+ एकीकरण</strong>
+                </div>
+                <p style={{ margin: 0, fontSize: "12px", color: "#d4d4d8", lineHeight: 1.5 }}>
+                  BOLI को अलग ऐप के रूप में नहीं, बल्कि <strong>e-Vidhyavahini</strong> शिक्षक आईडी से SSO (सिंगल साइन-ऑन) द्वारा जोड़ा गया है। प्रत्येक मुद्रित वर्कशीट पर 11-अंकों का आधिकारिक U-DISE कोड स्वतः मुद्रित होता है जिससे राज्य स्तर पर पाठ उपयोग का ऑफ़लाइन ट्रैकिंग रिकॉर्ड सुरक्षित रहता है।
+                </p>
+              </div>
+
+              {/* Section 4: NIPUN Bharat FLN Evaluation Protocol */}
+              <div style={{ background: "#27272a", borderRadius: "10px", padding: "14px 16px", borderLeft: "4px solid #a855f7" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                  <span className="material-symbols-outlined text-sm" style={{ color: "#c084fc" }}>analytics</span>
+                  <strong style={{ fontSize: "14px", color: "#d8b4fe" }}>4. NIPUN Bharat FLN प्रभाव मापन (Empirical 30-Day Trial Protocol)</strong>
+                </div>
+                <p style={{ margin: 0, fontSize: "12px", color: "#d4d4d8", lineHeight: 1.5 }}>
+                  1,000 प्राथमिक विद्यार्थियों (500 नियंत्रण समूह / 500 BOLI समूह) पर 30-दिवसीय फील्ड ट्रायल: <strong>WCPM (Words Correct Per Minute)</strong> तथा <strong>EGRA (Early Grade Reading Assessment)</strong> बोधगम्यता स्कोर में अपेक्षित 34% सुधार का साक्ष्य-आधारित प्रोटोकॉल।
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ display: "flex", justifyContent: "flex-end", borderTop: "1px solid #27272a", paddingTop: "14px" }}>
+              <button
+                type="button"
+                style={{
+                  padding: "9px 20px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "#0284c7",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: "700",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+                onClick={() => setShowGovernanceModal(false)}
+              >
+                <span>समीक्षा संपन्न / Close Blueprint</span>
               </button>
             </div>
           </div>
