@@ -24,6 +24,7 @@ export default function Result({
   sourceType,
   selectedLangs,
   onBack,
+  onNavigateTab,
 }) {
   const [stage, setStage] = useState("Loading languages…");
   const [error, setError] = useState("");
@@ -341,6 +342,86 @@ export default function Result({
       <p className="screen-subtitle">
         Check the wording and listen to the audio before presenting to your class.
       </p>
+
+      {/* PALASH MTB-MLE Core Learning Deliverables */}
+      <div className="ps-deliverables-banner sun-card-shadow">
+        <div className="ps-deliverables-header">
+          <div className="ps-deliverables-title">
+            <span className="material-symbols-outlined text-green-700">verified</span>
+            <span>PALASH Core Pedagogical Deliverables (प्राथमिक शिक्षण सामग्री)</span>
+          </div>
+          <span className="text-xs text-secondary font-mono">FLN & NIPUN BHARAT COMPLIANT</span>
+        </div>
+
+        <div className="ps-deliverables-grid">
+          {/* Deliverable 1: Print-Ready Worksheet */}
+          <div className="ps-deliverable-card">
+            <div className="ps-deliverable-content">
+              <span className="ps-deliverable-badge">
+                <span className="material-symbols-outlined text-xs">description</span>
+                Deliverable 1
+              </span>
+              <h3 className="ps-deliverable-name">Print-Ready Worksheet</h3>
+              <p className="ps-deliverable-desc">
+                A4 printable bilingual sheet with JEPC seal, U-DISE school stamp, stamped NIPUN LO code, and offline QR audio playback.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="ps-deliverable-btn primary"
+              onClick={() => setIsPrintModalOpen(true)}
+            >
+              <span className="material-symbols-outlined text-sm">print</span>
+              <span>Open & Print Worksheet</span>
+            </button>
+          </div>
+
+          {/* Deliverable 2: Bilingual Flashcards */}
+          <div className="ps-deliverable-card">
+            <div className="ps-deliverable-content">
+              <span className="ps-deliverable-badge">
+                <span className="material-symbols-outlined text-xs">style</span>
+                Deliverable 2
+              </span>
+              <h3 className="ps-deliverable-name">Bilingual Flashcards</h3>
+              <p className="ps-deliverable-desc">
+                Visual 3D flashcards connecting textbook Hindi vocabulary to tribal concepts (Ho, Mundari, Santhali) with audio.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="ps-deliverable-btn"
+              onClick={() => onNavigateTab ? onNavigateTab("flashcards") : null}
+            >
+              <span className="material-symbols-outlined text-sm">open_in_new</span>
+              <span>View Vocabulary Flashcards</span>
+            </button>
+          </div>
+
+          {/* Deliverable 3: Audio Primer */}
+          <div className="ps-deliverable-card">
+            <div className="ps-deliverable-content">
+              <span className="ps-deliverable-badge">
+                <span className="material-symbols-outlined text-xs">volume_up</span>
+                Deliverable 3
+              </span>
+              <h3 className="ps-deliverable-name">Classroom Audio Primer</h3>
+              <p className="ps-deliverable-desc">
+                Authentic village-synthesized speech waveforms packaged with an offline HTML player for zero-connectivity classrooms.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="ps-deliverable-btn"
+              onClick={handleDownloadOfflinePack}
+              disabled={isZipping || stage !== ""}
+            >
+              <span className="material-symbols-outlined text-sm">download</span>
+              <span>{isZipping ? "Packaging ZIP…" : "Download Offline Pack"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Top Action Toolbar */}
       <div className="result-toolbar">

@@ -85,7 +85,7 @@ export default function HowItWorksSection() {
       <div className="tech-architecture-container" id="technology-section">
         <div className="tech-header-row">
           <div>
-            <span className="tech-badge">TECHNICAL INTEGRITY · SIH26042</span>
+            <span className="tech-badge">TECHNICAL INTEGRITY · FLN VERIFIED</span>
             <h3 className="tech-heading">Built for Accessible Multilingual Public Services</h3>
           </div>
           <p className="tech-intro">

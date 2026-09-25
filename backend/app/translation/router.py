@@ -114,6 +114,20 @@ class TranslationRouter:
         src_norm = normalize_code(source) if source else detect_source_language(text)
         tgt_norm = normalize_code(target)
 
+        # 0. Handle Identity / Same-Language Passthrough cleanly
+        if src_norm == tgt_norm:
+            return {
+                "translation": text.strip(),
+                "translated": text.strip(),
+                "source_language": src_norm,
+                "target_language": tgt_norm,
+                "engine": "identity_passthrough",
+                "mode": "passthrough",
+                "confidence": 1.0,
+                "script_contamination": False,
+                "warnings": [],
+            }
+
         # 1. Select best engine
         engine = self.select_engine(src_norm, tgt_norm)
         if engine is None:

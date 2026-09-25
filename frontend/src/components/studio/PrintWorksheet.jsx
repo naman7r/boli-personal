@@ -9,6 +9,31 @@ const LANGUAGE_METADATA = {
   sck: { name: "Sadri", native: "सादरी / नागपुरी", script: "Devanagari", type: "Morphological Transfer" },
 };
 
+const NIPUN_COMPETENCY_CODES = {
+  1: [
+    { code: "LO-FLN-H1.02", desc: "ध्वनि पहचान व मौखिक बोध (Phonemic awareness in L1)" },
+    { code: "LO-FLN-H1.05", desc: "सचित्र शब्द मिलान व पठन (Visual-word association)" },
+    { code: "LO-FLN-M1.01", desc: "स्थानीय परिवेश आधारित संख्या ज्ञान (Contextual numeracy)" },
+  ],
+  2: [
+    { code: "LO-FLN-H2.02", desc: "मातृभाषा-हिंदी सेतु पठन (Bilingual oral bridge)" },
+    { code: "LO-FLN-H2.05", desc: "सरल वाक्य बोध व चित्र वर्णन (Sentence comprehension)" },
+    { code: "LO-FLN-M2.03", desc: "दैनिक जीवन आधारित भाषा प्रयोग (Contextual vocabulary)" },
+  ],
+  3: [
+    { code: "LO-FLN-H3.01", desc: "कक्षा संवाद व मौखिक अभिव्यक्ति (Oral expression in classroom)" },
+    { code: "LO-FLN-H3.04", desc: "लोककथा पठन व नैतिक मूल्य (Folklore & cultural comprehension)" },
+  ],
+  4: [
+    { code: "LO-FLN-H4.02", desc: "स्वतंत्र लेखन व व्याकरण सेतु (Grammar bridge & self-expression)" },
+    { code: "LO-FLN-H4.05", desc: "पर्यावरण व पारंपरिक ज्ञान विस्तार (Indigenous ecological concepts)" },
+  ],
+  5: [
+    { code: "LO-FLN-H5.01", desc: "मातृभाषा साहित्य व राज्य पाठ्यक्रम समन्वय (Curriculum integration)" },
+    { code: "LO-FLN-H5.03", desc: "सामुदायिक संवाद व मौखिक प्रस्तुति (Community storytelling)" },
+  ],
+};
+
 export default function PrintWorksheet({
   isOpen,
   onClose,
@@ -104,35 +129,66 @@ export default function PrintWorksheet({
 
         {/* Structured Printable A4 Sheet Document */}
         <article className="worksheet-document">
-          {/* Header Banner */}
+          {/* Header Banner with JEPC PALASH Institutional Stamping */}
           <header className="ws-header">
             <div className="ws-brand-cluster">
-              <div className="ws-logo">बो</div>
+              <div className="ws-logo" aria-hidden="true">बो</div>
               <div className="ws-title-group">
-                <h1 className="ws-main-title">BOLI — Multilingual Classroom Worksheet</h1>
+                <div className="ws-jepc-seal">
+                  झारखंड शिक्षा परियोजना परिषद् (JEPC) · स्कूली शिक्षा एवं साक्षरता विभाग
+                </div>
+                <h1 className="ws-main-title">PALASH MTB-MLE — Multilingual Classroom Worksheet</h1>
                 <p className="ws-tagline">
-                  Primary Mother-Tongue Learning & Bridge Pedagogy Aid · Jharkhand Multilingual Education
+                  Mother Tongue-Based Multilingual Education & Bridge Pedagogy Aid · NIPUN Bharat FLN Aligned
                 </p>
               </div>
             </div>
             <div className="ws-meta-pills">
               <span className="ws-grade-badge">Class {grade}</span>
-              <span className="ws-sih-badge">SIH26042</span>
+              <span className="ws-sih-badge">PALASH MLE</span>
+              <span className="ws-nipun-badge">NIPUN FLN</span>
             </div>
           </header>
 
-          {/* Student Info Bar */}
+          {/* Stamped NIPUN Bharat Competency Codes Bar */}
+          <div className="ws-nipun-code-bar">
+            <span className="ws-nipun-bar-title">
+              <span className="material-symbols-outlined ws-inline-icon">verified</span>
+              <span>पाठ्यक्रम कोड मुद्रण (Stamped Competencies):</span>
+            </span>
+            <div className="ws-nipun-tags">
+              {(NIPUN_COMPETENCY_CODES[grade] || NIPUN_COMPETENCY_CODES[2]).map((comp, idx) => (
+                <span key={idx} className="ws-nipun-tag" title={comp.desc}>
+                  <strong>{comp.code}</strong>: {comp.desc}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Student & School Inspection Verification Bar */}
           <div className="ws-student-bar">
             <div className="ws-field ws-field--name">
-              <span className="ws-label">Student Name:</span>
+              <span className="ws-label">विद्यार्थी (Name):</span>
               <span className="ws-line"></span>
             </div>
             <div className="ws-field ws-field--roll">
-              <span className="ws-label">Roll No:</span>
+              <span className="ws-label">क्रमांक (Roll):</span>
               <span className="ws-line"></span>
             </div>
             <div className="ws-field ws-field--date">
-              <span className="ws-label">Date:</span>
+              <span className="ws-label">दिनांक (Date):</span>
+              <span className="ws-line"></span>
+            </div>
+            <div className="ws-field ws-field--udise">
+              <span className="ws-label">U-DISE Code:</span>
+              <span className="ws-line"></span>
+            </div>
+            <div className="ws-field ws-field--school">
+              <span className="ws-label">विद्यालय (School):</span>
+              <span className="ws-line"></span>
+            </div>
+            <div className="ws-field ws-field--block">
+              <span className="ws-label">प्रखंड व जिला:</span>
               <span className="ws-line"></span>
             </div>
           </div>
@@ -232,6 +288,87 @@ export default function PrintWorksheet({
             </div>
           </section>
 
+          {/* Section 4: Classroom Practice Exercises & FLN Evaluation (अभ्यास कार्य) */}
+          <section className="ws-section ws-practice-section">
+            <div className="ws-section-header">
+              <span className="ws-step-num">4</span>
+              <div>
+                <h2 className="ws-section-title">Classroom Practice & FLN Exercises (अभ्यास और मूल्यांकन)</h2>
+                <p className="ws-section-desc">Interactive mother-tongue word matching & oral reading drill</p>
+              </div>
+            </div>
+
+            <div className="ws-practice-grid">
+              {/* Exercise A: Match the Words */}
+              <div className="ws-practice-card">
+                <h3 className="ws-practice-subtitle">
+                  <span className="material-symbols-outlined ws-inline-icon">draw</span>
+                  <span>Exercise A: Match the Words (शब्द मिलान करें)</span>
+                </h3>
+                <p className="ws-practice-hint">Draw a line connecting the Hindi word with the mother-tongue word:</p>
+                <div className="ws-match-columns">
+                  <div className="ws-match-col">
+                    <span className="ws-match-item">1. पानी (Water)</span>
+                    <span className="ws-match-item">2. किताब (Book)</span>
+                    <span className="ws-match-item">3. स्कूल (School)</span>
+                    <span className="ws-match-item">4. बच्चे (Children)</span>
+                  </div>
+                  <div className="ws-match-dots">
+                    <span>⚪ ┈┈┈ ⚪</span>
+                    <span>⚪ ┈┈┈ ⚪</span>
+                    <span>⚪ ┈┈┈ ⚪</span>
+                    <span>⚪ ┈┈┈ ⚪</span>
+                  </div>
+                  <div className="ws-match-col">
+                    <span className="ws-match-item">A. पुथी / ᱯᱩᱛᱷᱤ</span>
+                    <span className="ws-match-item">B. हुनको / होनको</span>
+                    <span className="ws-match-item">C. दाः / ᱫᱟᱜ</span>
+                    <span className="ws-match-item">D. इटुन आसरा / इस्कुल</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Exercise B: Oral Reading Fluency Meter (NIPUN Bharat FLN) */}
+              <div className="ws-practice-card">
+                <h3 className="ws-practice-subtitle">
+                  <span className="material-symbols-outlined ws-inline-icon">record_voice_over</span>
+                  <span>Exercise B: Oral Reading Fluency (मौखिक पठन दक्षता — NIPUN Target)</span>
+                </h3>
+                <p className="ws-practice-hint">
+                  शिक्षक मूल्यांकन (Teacher Evaluation mapped to LO-FLN-H{grade}.02 &gt; 35 wpm standard):
+                </p>
+                <div className="ws-fln-checklist">
+                  <div className="ws-fln-row">
+                    <span className="ws-fln-check">☐</span>
+                    <span className="ws-fln-label">
+                      <strong>LO-FLN-H{grade}.02:</strong> मातृभाषा ध्वनि पहचान व शुद्ध उच्चारण (Phonemic clarity)
+                    </span>
+                  </div>
+                  <div className="ws-fln-row">
+                    <span className="ws-fln-check">☐</span>
+                    <span className="ws-fln-label">
+                      <strong>LO-FLN-H{grade}.05:</strong> मातृभाषा से मानक हिंदी में अवधारणा सेतु बोध (Conceptual bridge)
+                    </span>
+                  </div>
+                  <div className="ws-fln-row">
+                    <span className="ws-fln-check">☐</span>
+                    <span className="ws-fln-label">
+                      <strong>NIPUN Target:</strong> धाराप्रवाह मौखिक पठन व आत्मविश्वास (Oral fluency & confidence)
+                    </span>
+                  </div>
+                  <div className="ws-teacher-score">
+                    <span>शिक्षक टिप्पणी (Remarks): ________________________________</span>
+                    <span>FLN स्तर: ⭐⭐⭐⭐⭐</span>
+                  </div>
+                  <div className="ws-teacher-sign-row">
+                    <span>शिक्षक हस्ताक्षर (Teacher Sign): ___________________</span>
+                    <span>मुहर (School Seal): [                    ]</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Footer with QR Audio Code & Pedagogical Instructions */}
           <footer className="ws-footer">
             <div className="ws-qr-panel">
@@ -257,7 +394,7 @@ export default function PrintWorksheet({
 
             <div className="ws-footer-attribution">
               <div className="ws-project-info">
-                <strong>BOLI (बोली)</strong> · Smart India Hackathon Prototype (SIH26042)
+                <strong>BOLI (बोली)</strong> · Mother Tongue-Based Multilingual Education Suite
               </div>
               <div className="ws-mission-statement">
                 Empowering Multilingual Primary Classrooms in Jharkhand · Bridging Mother-Tongues to State Curriculum

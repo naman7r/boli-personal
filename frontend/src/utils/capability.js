@@ -38,8 +38,12 @@ export function describeCapability({ translation, tts }) {
 }
 
 export function capabilityBadge(language) {
+  const code = language?.code;
+  if (code && ENGINE_LABELS[code]) {
+    return ENGINE_LABELS[code];
+  }
   const translation = language?.translation ?? language;
-  if (translation === "full") return "AI translation";
+  if (translation === "full") return "Active Engine";
   if (translation === "phrase_bank") return "Phrase bank only";
   return "Unavailable";
 }

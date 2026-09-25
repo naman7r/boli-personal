@@ -82,21 +82,22 @@ export async function extractChapter(file) {
   return response.json(); // { filename, sentences: [...], count }
 }
 
-// ASR: speech-to-text via Meta MMS Hindi ASR.
-export async function transcribeAudio(audioBlob) {
+// ASR: speech-to-text via Meta MMS ASR for Hindi & Tribal languages.
+export async function transcribeAudio(audioBlob, lang = "hin") {
   const form = new FormData();
   form.append("file", audioBlob, "recording.wav");
+  form.append("lang", lang);
   const response = await fetch(`${getApiBase()}/asr`, {
     method: "POST",
     body: form,
   });
   if (!response.ok) throw new Error(await detail(response));
-  return response.json(); // { text }
+  return response.json(); // { text, lang }
 }
 
 // Santali, Ho, Mundari, Kurukh, Sadri, Hindi, English.
-export function translate(text, target) {
-  return postJson("/translate", { text, target });
+export function translate(text, target, source = null) {
+  return postJson("/translate", { text, target, source });
   // { translated, target, script_contamination }
 }
 

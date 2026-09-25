@@ -4,8 +4,7 @@ import LanguageSelect from "./screens/LanguageSelect";
 import Result from "./screens/Result";
 import Logo from "./components/Logo";
 import TopUtilityBar from "./components/TopUtilityBar";
-import LanguagesSection from "./components/LanguagesSection";
-import HowItWorksSection from "./components/HowItWorksSection";
+import QuizLab from "./components/quiz/QuizLab";
 import GlobalFooter from "./components/GlobalFooter";
 import ForestBackground from "./components/ForestBackground";
 import LiveClassroom from "./components/LiveClassroom";
@@ -161,6 +160,17 @@ export default function App() {
             </button>
             <button
               type="button"
+              className={`nav-tab-link ${activeTab === "quiz" ? "is-active" : ""}`}
+              onClick={() => {
+                setActiveTab("quiz");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <span className="material-symbols-outlined text-sm">quiz</span>
+              <span>Practice Quiz (परख)</span>
+            </button>
+            <button
+              type="button"
               className={`nav-tab-link ${activeTab === "flashcards" ? "is-active" : ""}`}
               onClick={() => {
                 setActiveTab("flashcards");
@@ -169,33 +179,6 @@ export default function App() {
             >
               <span className="material-symbols-outlined text-sm">style</span>
               <span>Flashcards (पत्ती)</span>
-            </button>
-          </div>
-
-          <div className="nav-tab-separator" aria-hidden="true" />
-
-          <div className="nav-tabs-secondary">
-            <button
-              type="button"
-              className={`nav-tab-link nav-tab-secondary ${activeTab === "languages" ? "is-active" : ""}`}
-              onClick={() => {
-                setActiveTab("languages");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              <span className="material-symbols-outlined text-sm">language</span>
-              <span>Languages</span>
-            </button>
-            <button
-              type="button"
-              className={`nav-tab-link nav-tab-secondary ${activeTab === "how-it-works" ? "is-active" : ""}`}
-              onClick={() => {
-                setActiveTab("how-it-works");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              <span className="material-symbols-outlined text-sm">account_tree</span>
-              <span>How It Works</span>
             </button>
           </div>
         </nav>
@@ -235,7 +218,7 @@ export default function App() {
           </div>
           <div className="sih-initiative-badge">
             <span className="initiative-dot" />
-            <span>SIH26042</span>
+            <span>PALASH MTB-MLE</span>
           </div>
         </div>
       </header>
@@ -272,6 +255,7 @@ export default function App() {
                 sourceType={sourceType}
                 selectedLangs={selectedLangs}
                 onBack={back}
+                onNavigateTab={(tab) => setActiveTab(tab)}
               />
             )}
           </div>
@@ -293,9 +277,9 @@ export default function App() {
           <Flashcards lessonText={hindiText} currentGrade={grade} />
         )}
 
-        {activeTab === "languages" && <LanguagesSection />}
-
-        {activeTab === "how-it-works" && <HowItWorksSection />}
+        {activeTab === "quiz" && (
+          <QuizLab lessonText={hindiText} currentGrade={grade} />
+        )}
       </main>
 
       {/* Government-Grade Footer with SIH Prototype Disclaimers */}

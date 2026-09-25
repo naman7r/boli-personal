@@ -1,7 +1,7 @@
 """POST /asr — Hindi speech to text via Meta MMS ASR."""
 
 import logging
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.speech import asr
 
@@ -10,8 +10,11 @@ log = logging.getLogger(__name__)
 
 
 @router.post("/asr")
-async def transcribe_audio(file: UploadFile = File(...)):
-    """Transcribe spoken Hindi audio into Hindi text."""
+async def transcribe_audio(
+    file: UploadFile = File(...),
+    lang: str = Form("hin"),
+):
+    """Transcribe spoken Hindi or tribal audio into text."""
     try:
         audio_bytes = await file.read()
     except Exception as e:
@@ -21,8 +24,8 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise HTTPException(400, "The audio file was empty.")
 
     try:
-        text = asr.transcribe(audio_bytes)
-        return {"text": text}
+        text = asr.transcribe(audio_bytes, lang=lang)
+        return {"text": text, "lang": lang}
     except ValueError as e:
         raise HTTPException(400, str(e))
     except Exception as e:

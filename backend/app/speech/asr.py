@@ -109,8 +109,32 @@ def _decode_audio(file_bytes: bytes) -> np.ndarray:
     )
 
 
-def transcribe(audio_bytes: bytes) -> str:
-    """Transcribe Hindi speech to Devanagari text."""
+SUPPORTED_ASR_LANGS = {
+    "hin": "hin",
+    "hin_deva": "hin",
+    "hi": "hin",
+    "sat": "sat",
+    "sat_olck": "sat",
+    "unr": "unr",
+    "unr_deva": "unr",
+    "hoc": "hoc",
+    "hoc_deva": "hoc",
+    "kru": "kru",
+    "kru_deva": "kru",
+    "sck": "sck",
+    "sck_deva": "sck",
+}
+
+
+def _normalize_lang(code: str | None) -> str:
+    if not code:
+        return "hin"
+    cleaned = code.strip().lower()
+    return SUPPORTED_ASR_LANGS.get(cleaned, cleaned.split("_")[0])
+
+
+def transcribe(audio_bytes: bytes, lang: str = "hin") -> str:
+    """Transcribe spoken audio in Hindi or tribal languages (Santali, Ho, Mundari, Kurukh, Sadri)."""
     audio_array = _decode_audio(audio_bytes)
     if len(audio_array) == 0:
         raise ValueError("Audio contains no samples.")
@@ -118,6 +142,17 @@ def transcribe(audio_bytes: bytes) -> str:
     import torch
 
     processor, model = _load_model()
+    target_lang = _normalize_lang(lang)
+
+    # Switch active MMS adapter and tokenizer target lang
+    try:
+        processor.tokenizer.set_target_lang(target_lang)
+        model.load_adapter(target_lang)
+    except Exception as e:
+        log.warning("Could not set MMS adapter for %s (%s), falling back to hin", target_lang, e)
+        processor.tokenizer.set_target_lang("hin")
+        model.load_adapter("hin")
+
     inputs = processor(audio_array, sampling_rate=16000, return_tensors="pt")
 
     with torch.no_grad():

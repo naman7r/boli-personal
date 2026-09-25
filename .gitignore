@@ -34,3 +34,11 @@ frontend/dist-ssr/
 .idea/
 .vscode/
 *.sw?
+
+# Documents & Presentations
+*.pdf
+research_dossier/
+presentation_assets/
+generate_deck.py
+
+

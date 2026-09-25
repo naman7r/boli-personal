@@ -558,62 +558,6 @@ export default function Capture({
 
       <ContrastDemo />
 
-      {/* Classroom Pedagogy Feature Bento Grid */}
-      <div className="classroom-bento-grid">
-        <Tilt rotationFactor={7}>
-          <div className="bento-card">
-            <div className="bento-icon-box bg-primary-light">
-              <span className="material-symbols-outlined text-2xl text-primary">translate</span>
-            </div>
-            <h3 className="bento-title">Native Tribal Speech</h3>
-            <p className="bento-desc">
-              Santali generated with Indic Parler-TTS in native Ol Chiki script, alongside Ho, Mundari, Kurukh, and Sadri high-clarity pronunciation audio via Meta MMS.
-            </p>
-            <div className="bento-footer">
-              <span className="bento-tag text-primary">5 Primary Dialects</span>
-              <span className="material-symbols-outlined text-sm text-primary">verified</span>
-            </div>
-          </div>
-        </Tilt>
-
-        <Tilt rotationFactor={7}>
-          <div className="bento-card">
-            <div className="bento-icon-box bg-secondary-light">
-              <span className="material-symbols-outlined text-2xl text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>
-                download_for_offline
-              </span>
-            </div>
-            <h3 className="bento-title">Offline Lesson Pack Download</h3>
-            <p className="bento-desc">
-              Generate self-contained HTML players and pure WAV audio files. Teachers can preload lesson plans in block resource centres and run circle drills in zero-connectivity village schools.
-            </p>
-            <div className="bento-footer">
-              <span className="bento-tag text-secondary">HTML + WAV Bundle</span>
-              <span className="material-symbols-outlined text-sm text-secondary">offline_pin</span>
-            </div>
-          </div>
-        </Tilt>
-
-        <Tilt rotationFactor={7}>
-          <div className="bento-card">
-            <div className="bento-icon-box bg-tertiary-light">
-              <span className="material-symbols-outlined text-2xl text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>
-                record_voice_over
-              </span>
-            </div>
-            <h3 className="bento-title">Interactive Choral Echo</h3>
-            <p className="bento-desc">
-              Spaced repetition designed for Class 1–5 tribal learners. Real-time classroom ASR listens to teacher phrases, plays high-volume native audio, and guides choral chant-and-repeat drills.
-            </p>
-            <div className="bento-footer">
-              <span className="bento-tag text-tertiary">Choral Repetition</span>
-              <span className="material-symbols-outlined text-sm text-tertiary">graphic_eq</span>
-            </div>
-          </div>
-        </Tilt>
-      </div>
-
-
     </section>
   );
 }
