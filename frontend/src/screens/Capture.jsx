@@ -402,45 +402,6 @@ export default function Capture({
                   Class {grade} Pacing
                 </span>
               </div>
-
-              {/* 1-Click JCERT Official Textbook Presets for Instant Live Demo */}
-              <div className="jcert-presets-shelf">
-                <div className="jcert-presets-header">
-                  <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-sm" style={{ color: "#fea619", fontVariationSettings: "'FILL' 1" }}>
-                      auto_stories
-                    </span>
-                    <strong className="jcert-presets-title">1-क्लिक JCERT पाठ चयन (Instant Textbook Samples):</strong>
-                  </div>
-                  <span className="jcert-presets-subtext">Click any sample to load verified Class 1–4 curriculum</span>
-                </div>
-                <div className="jcert-preset-chips-grid">
-                  {SAMPLE_LESSONS.filter((p) => p.id !== "custom").map((p) => {
-                    const isSelected = hindiText === p.text;
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        className={`jcert-preset-chip ${isSelected ? "active" : ""}`}
-                        onClick={() => {
-                          setHindiText(p.text);
-                          setGrade(p.grade);
-                          setSourceType("typed");
-                          setChapterSentences([]);
-                        }}
-                        title={`Click to load ${p.label}`}
-                      >
-                        <div className="preset-chip-top">
-                          <span className="material-symbols-outlined text-sm preset-chip-icon">{p.icon}</span>
-                          <span className="preset-chip-badge">{p.badge}</span>
-                        </div>
-                        <div className="preset-chip-title">{p.shortTitle}</div>
-                        <div className="preset-chip-preview">"{p.text.slice(0, 44)}…"</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
 
             {/* Multimodal Recording & Ingestion Toolbar */}
