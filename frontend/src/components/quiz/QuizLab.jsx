@@ -1279,15 +1279,6 @@ export default function QuizLab({ lessonText, currentGrade = 2 }) {
     }
   }
 
-  // Auto-play audio word when an audio question appears
-  useEffect(() => {
-    if (currentQ?.type === "audio" && currentQ?.audioWord) {
-      const timer = setTimeout(() => {
-        playAudioWord(currentQ.audioWord);
-      }, 350);
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex, selectedLang, selectedGrade, quizMode]);
 
   // Dynamically generate a chapter quiz from extracted sentences
   function generateQuizFromSentences(sentences, filename = "Uploaded Chapter") {
@@ -1703,7 +1694,7 @@ export default function QuizLab({ lessonText, currentGrade = 2 }) {
                   <span className="material-symbols-outlined text-2xl">
                     {isPlayingAudio ? "graphic_eq" : "volume_up"}
                   </span>
-                  <span>{isPlayingAudio ? "Playing Voice…" : "Listen Again (आवाज़ सुनें)"}</span>
+                  <span>{isPlayingAudio ? "Playing Voice…" : "Play Voice (आवाज़ सुनें)"}</span>
                 </button>
                 <div className="audio-word-display">
                   <span className="audio-word-native">{currentQ.audioWord}</span>
