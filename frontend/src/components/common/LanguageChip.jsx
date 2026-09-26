@@ -1,17 +1,18 @@
-import { capabilityBadge, describeCapability, nativeName, LANGUAGE_DETAILS } from "../../capability";
+import { capabilityBadge, describeCapability, nativeName } from "../../capability";
 
-// One selectable language card, with rich regional & pedagogical details.
+// One selectable language, with its real capability spelled out.
 export default function LanguageChip({ language, selected, onToggle }) {
   const unavailable = language.translation === "none" && language.tts === "none";
-  const details = LANGUAGE_DETAILS[language.code] || {};
-  const native = details.nativeScript || nativeName(language);
+  const native = nativeName(language);
   const isAi = language.translation === "full";
 
   return (
     <label
-      className={`lang-select-card ${isAi ? "is-ai" : "is-bank"} ${
-        selected ? "is-selected" : ""
-      } ${unavailable ? "is-disabled" : ""}`}
+      className={`lang-select-card chip cap-${language.translation} chip-${language.translation} ${
+        isAi ? "is-ai" : "is-bank"
+      } ${selected ? "is-selected chip-selected" : ""} ${
+        unavailable ? "is-disabled" : ""
+      }`}
     >
       <input
         type="checkbox"
@@ -20,63 +21,62 @@ export default function LanguageChip({ language, selected, onToggle }) {
         disabled={unavailable}
         onChange={() => onToggle(language.code)}
       />
-      <div className="lang-card-content">
-        <div className="lang-card-top-bar">
-          <div className="lang-card-header-left">
-            <div
-              className={`lang-card-check-box ${selected ? "is-checked" : ""}`}
-              aria-hidden="true"
+      <div className="lang-card-content chip-body">
+        <div className="lang-card-top">
+          <div
+            className={`lang-card-check-box ${selected ? "is-checked" : ""}`}
+            aria-hidden="true"
+          >
+            {selected && (
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "16px", fontWeight: "bold" }}
+              >
+                check
+              </span>
+            )}
+          </div>
+          <div className="lang-card-title-wrap chip-name chip-head">
+            <strong className="lang-card-name">{language.name}</strong>
+            {native && (
+              <span className="lang-card-native chip-native in-script" lang={language.code}>
+                {native}
+              </span>
+            )}
+          </div>
+          <span
+            className={`lang-badge chip-badge badge ${
+              isAi ? "lang-badge--ai" : "lang-badge--bank"
+            }`}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "13px" }}
             >
-              {selected && (
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "15px", fontWeight: "bold" }}
-                >
-                  check
-                </span>
-              )}
-            </div>
-            <div className="lang-title-stack">
-              <span className="lang-card-name">{language.name}</span>
-              {native && (
-                <span className="lang-card-native-tag in-script" lang={language.code}>
-                  {native}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <span className="lang-tech-badge">
-            {capabilityBadge(language)}
+              {isAi ? "verified" : "record_voice_over"}
+            </span>
+            <span>{capabilityBadge(language)}</span>
           </span>
         </div>
 
-        {details.regions && (
-          <div className="lang-card-region-row">
-            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
-              location_on
-            </span>
-            <span>{details.regions}</span>
-          </div>
-        )}
+        <p className="lang-card-desc chip-detail">
+          {describeCapability(language)}
+        </p>
 
-        <div className="lang-card-voice-row">
-          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
-            volume_up
-          </span>
-          <span>{details.voiceStatus || describeCapability(language)}</span>
-        </div>
-
-        {details.engineBadge && (
-          <div className="lang-card-engine-row">
-            <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>
-              tune
+        {language.note && (
+          <div className="lang-card-note chip-note">
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "14px" }}
+            >
+              info
             </span>
-            <span>{details.engineBadge}</span>
+            <span>{language.note}</span>
           </div>
         )}
       </div>
     </label>
   );
 }
+
 
