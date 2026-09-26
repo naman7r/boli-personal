@@ -1434,7 +1434,7 @@ export default function Flashcards({ lessonText = "", currentGrade = 2 }) {
             {/* FRONT OF CARD (Hindi + Visual Icon) */}
             <div className="flashcard-face flashcard-front" style={{ borderColor: card.color }}>
               <div className="card-top-meta">
-                <span className="card-cat-badge" style={{ backgroundColor: `${card.color}18`, color: card.color }}>
+                <span className="card-cat-badge" style={{ borderColor: card.color }}>
                   {card.category}
                 </span>
                 <span className="flip-hint">
@@ -1443,7 +1443,7 @@ export default function Flashcards({ lessonText = "", currentGrade = 2 }) {
                 </span>
               </div>
 
-              <div className="card-visual-circle" style={{ backgroundColor: `${card.color}15`, color: card.color }}>
+              <div className="card-visual-circle" style={{ borderColor: `${card.color}60` }}>
                 <span className="material-symbols-outlined card-big-icon" style={{ fontVariationSettings: "'FILL' 1" }}>
                   {card.icon}
                 </span>
@@ -1465,7 +1465,7 @@ export default function Flashcards({ lessonText = "", currentGrade = 2 }) {
             {/* BACK OF CARD (Mother-Tongue Native Script + Audio) */}
             <div className="flashcard-face flashcard-back" style={{ borderColor: card.color }}>
               <div className="card-top-meta">
-                <span className="card-cat-badge" style={{ backgroundColor: `${card.color}18`, color: card.color }}>
+                <span className="card-cat-badge" style={{ borderColor: card.color }}>
                   {dialectInfo.langName}
                 </span>
                 <span className="flip-hint">

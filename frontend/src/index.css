@@ -6938,22 +6938,234 @@ body:not(.light-theme-override) .category-pill-btn.active {
   color: #ffffff !important;
 }
 
+/* ==========================================================================
+   Visual Bilingual Flashcards - Dark Studio Theme & High-Contrast Overrides
+   ========================================================================== */
 body:not(.light-theme-override) .cat-count-badge {
   background: rgba(0, 0, 0, 0.35) !important;
   color: #fef08a !important;
 }
 
+body:not(.light-theme-override) .flashcard-stage-container {
+  color: #f8fafc;
+}
+
 body:not(.light-theme-override) .interactive-flashcard-wrap {
   border-color: rgba(74, 222, 128, 0.3) !important;
+  perspective: 1000px;
 }
 
 body:not(.light-theme-override) .flashcard-face {
-  background: #0f1d14 !important;
-  border: 2px solid #1e3a29 !important;
+  background: radial-gradient(circle at 50% 25%, #182b20 0%, #0c1810 100%) !important;
+  border: 2px solid rgba(74, 222, 128, 0.32) !important;
   color: #ffffff !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06) !important;
 }
 
-body:not(.light-theme-override) .flashcard-meaning {
-  color: #94a398 !important;
+body:not(.light-theme-override) .flashcard-face.flashcard-back {
+  background: radial-gradient(circle at 50% 25%, #16281e 0%, #0a150e 100%) !important;
+  border: 2px solid rgba(74, 222, 128, 0.35) !important;
 }
+
+/* Category Badge & Flip Hint */
+body:not(.light-theme-override) .card-cat-badge {
+  background: rgba(15, 23, 42, 0.85) !important;
+  color: #38bdf8 !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  font-weight: 700 !important;
+  padding: 0.3rem 0.75rem !important;
+}
+
+body:not(.light-theme-override) .flip-hint {
+  color: #94a3b8 !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+}
+
+body:not(.light-theme-override) .flip-hint .material-symbols-outlined {
+  color: #38bdf8 !important;
+  font-size: 0.95rem !important;
+}
+
+/* Center Visual Circle & Big Icon */
+body:not(.light-theme-override) .card-visual-circle {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+body:not(.light-theme-override) .card-big-icon {
+  color: #fef08a !important;
+  filter: drop-shadow(0 2px 12px rgba(254, 240, 138, 0.35)) !important;
+}
+
+/* Front Main Vocabulary Word - Crystal Clear Contrast */
+body:not(.light-theme-override) .card-hindi-block h2,
+body:not(.light-theme-override) .card-hindi-word {
+  color: #ffffff !important;
+  font-size: 2.45rem !important;
+  font-weight: 900 !important;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 255, 255, 0.15) !important;
+  letter-spacing: 0.015em;
+  margin: 0.4rem 0 0.45rem 0 !important;
+}
+
+body:not(.light-theme-override) .card-meaning-sub,
+body:not(.light-theme-override) .flashcard-meaning {
+  color: #cbd5e1 !important;
+  font-size: 1.08rem !important;
+  font-weight: 500 !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Card Bottom Footer */
+body:not(.light-theme-override) .card-bottom-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #94a3b8 !important;
+  padding-top: 0.75rem !important;
+}
+
+body:not(.light-theme-override) .card-class-tag {
+  color: #6ee7b7 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  padding: 0.25rem 0.65rem !important;
+  border-radius: var(--radius-full);
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+}
+
+body:not(.light-theme-override) .card-index-count {
+  color: #fde047 !important;
+  font-weight: 800 !important;
+  font-size: 0.9rem !important;
+}
+
+/* Back of Card - Mother Tongue Native Script & Phonetics */
+body:not(.light-theme-override) .script-badge-small {
+  color: #38bdf8 !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+}
+
+body:not(.light-theme-override) .card-native-script {
+  color: #fef08a !important;
+  font-size: 2.6rem !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.9), 0 0 30px rgba(254, 240, 138, 0.25) !important;
+  margin: 0.4rem 0 0.5rem 0 !important;
+}
+
+body:not(.light-theme-override) .card-translit-pronounce {
+  color: #cbd5e1 !important;
+  font-size: 1.02rem !important;
+}
+
+body:not(.light-theme-override) .card-translit-pronounce strong {
+  color: #4ade80 !important;
+  font-weight: 800 !important;
+}
+
+body:not(.light-theme-override) .card-sentence-box {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem !important;
+}
+
+body:not(.light-theme-override) .sentence-label {
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+body:not(.light-theme-override) .sentence-text {
+  color: #f8fafc !important;
+  font-size: 0.98rem !important;
+  font-weight: 600 !important;
+}
+
+/* Card Audio Button */
+body:not(.light-theme-override) .card-audio-btn {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  color: #ffffff !important;
+  border: 1px solid #10b981 !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+body:not(.light-theme-override) .card-audio-btn:hover {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Navigation Controls & Pedagogy Guide */
+body:not(.light-theme-override) .card-counter-display {
+  color: #cbd5e1 !important;
+  font-size: 0.95rem !important;
+}
+
+body:not(.light-theme-override) .card-counter-display strong {
+  color: #fef08a !important;
+  font-weight: 800 !important;
+}
+
+body:not(.light-theme-override) .flashcard-pedagogy-guide {
+  background: #111e15 !important;
+  border: 1px solid rgba(74, 222, 128, 0.2) !important;
+  color: #cbd5e1 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+body:not(.light-theme-override) .guide-header strong {
+  color: #ffffff !important;
+  font-size: 1.05rem !important;
+}
+
+body:not(.light-theme-override) .drill-steps-list li {
+  color: #94a3b8 !important;
+  line-height: 1.6;
+}
+
+body:not(.light-theme-override) .drill-steps-list li strong {
+  color: #fef08a !important;
+}
+
+/* Toolbar & Dialect / Category Pills */
+body:not(.light-theme-override) .dialect-pill-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .dialect-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .dialect-pill-btn.active {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  color: #ffffff !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35) !important;
+}
+
+body:not(.light-theme-override) .category-pill-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .category-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .category-pill-btn.active {
+  background: linear-gradient(135deg, #d97706, #b45309) !important;
+  color: #ffffff !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35) !important;
+}
+
