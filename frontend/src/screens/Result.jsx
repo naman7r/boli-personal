@@ -42,12 +42,14 @@ export default function Result({
     let cancelled = false;
 
     async function run() {
-      const sentenceList =
-        chapterSentences && chapterSentences.length > 0
-          ? chapterSentences
-          : [hindiText].filter(Boolean);
+      const fullLessonText = (
+        hindiText ||
+        (chapterSentences && chapterSentences.length > 0
+          ? chapterSentences.join(" ")
+          : "")
+      ).trim();
 
-      if (sentenceList.length === 0) return;
+      if (!fullLessonText) return;
 
       try {
         const all = await fetchLanguages();
@@ -55,133 +57,155 @@ export default function Result({
         const picked = all.filter((l) => selectedLangs.includes(l.code));
         setChosen(picked);
 
-        const accumulatedChapterResults = [];
-
-        for (let idx = 0; idx < sentenceList.length; idx++) {
-          const currentText = sentenceList[idx];
-          setStage(
-            sentenceList.length > 1
-              ? `Processing sentence ${idx + 1} of ${sentenceList.length}…`
-              : "Processing lesson…"
-          );
-
-          // 0. Record lesson submission
-          let currentLessonId = null;
-          try {
-            const lesson = await createLesson({
-              sourceText: currentText,
-              sourceType,
-              languages: selectedLangs,
-            });
-            if (cancelled) return;
-            currentLessonId = lesson.id;
-            if (idx === 0) setLessonId(lesson.id);
-          } catch {
-            // Non-fatal if lesson logging fails
-          }
-
-          const currentAudio = {};
-          const currentTranslations = [];
-
-          // Helper to speak one language
-          async function speakInto(language, text) {
-            setStage(`Generating ${language.name} audio…`);
-            try {
-              const result = await speak(text, language.code);
-              if (cancelled) return;
-              // result may contain { kind: "audio", blob, targetText } via Phase 12 header
-              currentAudio[language.code] = { ...result, text };
-              if (idx === 0) {
-                setAudio((prev) => ({
-                  ...prev,
-                  [language.code]: { ...result, text },
-                }));
-              }
-            } catch (e) {
-              if (cancelled) return;
-              currentAudio[language.code] = { kind: "error", error: e.message };
-              if (idx === 0) {
-                setAudio((prev) => ({
-                  ...prev,
-                  [language.code]: { kind: "error", error: e.message },
-                }));
-              }
-            }
-          }
-
-          // 1. Speak phrase bank languages that do not depend on LLM
-          for (const language of picked.filter(speaksWithoutPedagogy)) {
-            await speakInto(language, currentText);
-            if (cancelled) return;
-          }
-
-          // 2. Translate current text immediately (independent of simplification)
-          for (const language of picked) {
-            const target = translateTargetFor(language);
-            if (!target) continue;
-            setStage(`Translating into ${language.name}…`);
-            try {
-              const result = await translate(currentText, target);
-              if (cancelled) return;
-              const transObj = {
-                code: language.code,
-                name: language.name,
-                sentence: currentText,
-                translated: result.translated,
-                contaminated: result.script_contamination,
-              };
-              currentTranslations.push(transObj);
-              if (idx === 0) {
-                setTranslations((prev) => [...prev, transObj]);
-              }
-            } catch (transErr) {
-              console.warn(`Translation error for ${language.name}:`, transErr);
-            }
-          }
-
-          // 3. Simplify with grade level (enhances lesson with local pedagogy)
-          setStage(
-            sentenceList.length > 1
-              ? `Simplifying sentence ${idx + 1} of ${sentenceList.length} (Class ${grade})…`
-              : `Simplifying lesson for Class ${grade}…`
-          );
-          let simplified = null;
-          try {
-            simplified = await simplify(currentText, grade);
-            if (cancelled) return;
-            if (idx === 0) setAdapted(simplified);
-          } catch (e) {
-            if (cancelled) return;
-            if (idx === 0) setSimplifyError(e.message);
-          }
-
-          // 4. Speak anything with translation + voice
-          for (const language of picked) {
-            if (language.tts !== "full" || speaksWithoutPedagogy(language))
-              continue;
-            const mine = currentTranslations.filter(
-              (t) => t.code === language.code
-            );
-            if (!mine.length) continue;
-            await speakInto(
-              language,
-              mine.map((t) => t.translated).join(" ")
-            );
-            if (cancelled) return;
-          }
-
-          accumulatedChapterResults.push({
-            sentenceIndex: idx,
-            sourceText: currentText,
-            lessonId: currentLessonId,
-            adapted: simplified,
-            translations: currentTranslations,
-            audio: currentAudio,
+        // 0. Record lesson submission
+        try {
+          const lesson = await createLesson({
+            sourceText: fullLessonText,
+            sourceType,
+            languages: selectedLangs,
           });
-          setChapterResults([...accumulatedChapterResults]);
+          if (cancelled) return;
+          setLessonId(lesson.id);
+        } catch {
+          // Non-fatal logging
+        }
+
+        // 1. Holistic Pedagogical Simplification (ONE single call for the entire chapter)
+        setStage(`Adapting lesson for Class ${grade} with tribal cultural grounding…`);
+        let simplified = null;
+        try {
+          simplified = await simplify(fullLessonText, grade);
+          if (cancelled) return;
+          setAdapted(simplified);
+        } catch (e) {
+          if (cancelled) return;
+          console.warn("Pedagogy simplification failed:", e);
+          setSimplifyError(e.message);
+        }
+
+        // 2. Determine sentences to present, translate, and synthesize
+        let sentencesToProcess = [];
+        if (simplified?.adapted_hindi?.length > 0) {
+          sentencesToProcess = simplified.adapted_hindi;
+        } else if (chapterSentences && chapterSentences.length > 0) {
+          sentencesToProcess = chapterSentences;
+        } else {
+          sentencesToProcess = [fullLessonText];
+        }
+
+        // 3. Parallel Multilingual Translation across all sentences & picked languages
+        setStage(
+          `Translating sentences into ${picked.map((l) => l.name).join(", ")}…`
+        );
+
+        const sentenceResults = await Promise.all(
+          sentencesToProcess.map(async (sentText, idx) => {
+            const sentTranslations = [];
+            await Promise.all(
+              picked.map(async (language) => {
+                const target = translateTargetFor(language);
+                if (!target) return;
+                try {
+                  const res = await translate(sentText, target);
+                  sentTranslations.push({
+                    code: language.code,
+                    name: language.name,
+                    sentence: sentText,
+                    translated: res.translated,
+                    contaminated: res.script_contamination,
+                  });
+                } catch (transErr) {
+                  console.warn(
+                    `Translation error for ${language.name}:`,
+                    transErr
+                  );
+                }
+              })
+            );
+
+            return {
+              sentenceIndex: idx,
+              sourceText: sentText,
+              translations: sentTranslations,
+              audio: {},
+            };
+          })
+        );
+
+        if (cancelled) return;
+
+        if (sentenceResults.length > 0) {
+          setTranslations(sentenceResults[0].translations);
+        }
+        setChapterResults(sentenceResults);
+
+        // 4. Synthesize Sentence 1 audio immediately for instant playback
+        setStage("Synthesizing classroom audio…");
+        const firstSentence = sentenceResults[0];
+        if (firstSentence) {
+          const firstAudio = {};
+          await Promise.all(
+            picked.map(async (language) => {
+              let textToSpeak = firstSentence.sourceText;
+              const mine = firstSentence.translations.find(
+                (t) => t.code === language.code
+              );
+              if (
+                mine?.translated &&
+                language.tts === "full" &&
+                !speaksWithoutPedagogy(language)
+              ) {
+                textToSpeak = mine.translated;
+              }
+              try {
+                const res = await speak(textToSpeak, language.code);
+                firstAudio[language.code] = { ...res, text: textToSpeak };
+              } catch (e) {
+                firstAudio[language.code] = { kind: "error", error: e.message };
+              }
+            })
+          );
+
+          if (cancelled) return;
+          firstSentence.audio = firstAudio;
+          setAudio(firstAudio);
+          setChapterResults([...sentenceResults]);
         }
 
         setStage("");
+
+        // 5. Asynchronous background audio synthesis for remaining sentences (non-blocking)
+        (async () => {
+          for (let sIdx = 1; sIdx < sentenceResults.length; sIdx++) {
+            if (cancelled) break;
+            const sentItem = sentenceResults[sIdx];
+            const sAudio = {};
+            for (const language of picked) {
+              if (cancelled) break;
+              let textToSpeak = sentItem.sourceText;
+              const mine = sentItem.translations.find(
+                (t) => t.code === language.code
+              );
+              if (
+                mine?.translated &&
+                language.tts === "full" &&
+                !speaksWithoutPedagogy(language)
+              ) {
+                textToSpeak = mine.translated;
+              }
+              try {
+                const res = await speak(textToSpeak, language.code);
+                sAudio[language.code] = { ...res, text: textToSpeak };
+              } catch (e) {
+                sAudio[language.code] = { kind: "error", error: e.message };
+              }
+            }
+            sentItem.audio = sAudio;
+            if (!cancelled) {
+              setChapterResults([...sentenceResults]);
+            }
+          }
+        })();
       } catch (e) {
         if (cancelled) return;
         setError(e.message);
@@ -194,6 +218,62 @@ export default function Result({
       cancelled = true;
     };
   }, [hindiText, grade, chapterSentences, sourceType, selectedLangs]);
+
+  async function generateAudioForSentence(sentenceIdx, langCode) {
+    const item = chapterResults[sentenceIdx];
+    if (!item) return;
+    const language = chosen.find((c) => c.code === langCode);
+    if (!language) return;
+
+    let textToSpeak = item.sourceText;
+    const mine = item.translations?.find((t) => t.code === langCode);
+    if (
+      mine?.translated &&
+      language.tts === "full" &&
+      !speaksWithoutPedagogy(language)
+    ) {
+      textToSpeak = mine.translated;
+    }
+
+    setChapterResults((prev) => {
+      const copy = [...prev];
+      copy[sentenceIdx] = {
+        ...copy[sentenceIdx],
+        audio: {
+          ...(copy[sentenceIdx].audio || {}),
+          [langCode]: { kind: "loading" },
+        },
+      };
+      return copy;
+    });
+
+    try {
+      const res = await speak(textToSpeak, langCode);
+      setChapterResults((prev) => {
+        const copy = [...prev];
+        copy[sentenceIdx] = {
+          ...copy[sentenceIdx],
+          audio: {
+            ...(copy[sentenceIdx].audio || {}),
+            [langCode]: { ...res, text: textToSpeak },
+          },
+        };
+        return copy;
+      });
+    } catch (e) {
+      setChapterResults((prev) => {
+        const copy = [...prev];
+        copy[sentenceIdx] = {
+          ...copy[sentenceIdx],
+          audio: {
+            ...(copy[sentenceIdx].audio || {}),
+            [langCode]: { kind: "error", error: e.message },
+          },
+        };
+        return copy;
+      });
+    }
+  }
 
   async function handleDownloadOfflinePack() {
     setIsZipping(true);
@@ -471,9 +551,61 @@ export default function Result({
       </div>
       {error && <p className="error">{error}</p>}
 
+      {simplifyError && (
+        <div className="panel">
+          <h2>Simplified Hindi</h2>
+          <p className="error">
+            The lesson could not be simplified this time. {simplifyError}
+          </p>
+          <p className="note">
+            Anything below that does not need this step is unaffected.
+          </p>
+        </div>
+      )}
+
+      {adapted && (
+        <div className="panel panel--simplified">
+          <div className="panel-header">
+            <h2>
+              Simplified Hindi <span lang="hi">(आसान हिंदी)</span>
+            </h2>
+            <span className="concept-badge">Class {grade}</span>
+          </div>
+          <p className="group-blurb">
+            <strong>Concept:</strong> {adapted.concept} — rewritten for a child
+            whose mother tongue is not Hindi.
+          </p>
+          <ol className="sentence-list" lang="hi">
+            {adapted.adapted_hindi.map((sentence, i) => (
+              <li key={i}>{sentence}</li>
+            ))}
+          </ol>
+          {adapted.substitutions?.length > 0 && (
+            <ul className="subs">
+              {adapted.substitutions.map((s, i) => (
+                <li key={i}>
+                  <strong>{s.from}</strong> → <strong>{s.to}</strong> — {s.why}
+                </li>
+              ))}
+            </ul>
+          )}
+          {adapted.readability && (
+            <p className="note">
+              Readability: {adapted.readability.before_wps} words/sentence
+              originally →{" "}
+              <strong>{adapted.readability.after_wps} words/sentence</strong>{" "}
+              adapted.
+            </p>
+          )}
+        </div>
+      )}
+
       {chapterResults.length > 1 ? (
         /* Multi-sentence Chapter Mode */
-        <div className="chapter-results-list" style={{ display: "grid", gap: "1.5rem" }}>
+        <div
+          className="chapter-results-list"
+          style={{ display: "grid", gap: "1.5rem" }}
+        >
           {chapterResults.map((item, idx) => (
             <article
               key={idx}
@@ -487,18 +619,16 @@ export default function Result({
                 <span className="group-tag group-tag--ai">Class {grade}</span>
               </div>
 
-              <p style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0.25rem 0 0.75rem 0" }} lang="hi">
+              <p
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                  margin: "0.25rem 0 0.75rem 0",
+                }}
+                lang="hi"
+              >
                 {item.sourceText}
               </p>
-
-              {item.adapted && (
-                <div style={{ margin: "0.75rem 0", padding: "0.75rem", background: "var(--card-subtle)", borderRadius: "var(--radius-md)" }}>
-                  <span className="concept-badge">Concept: {item.adapted.concept}</span>
-                  <p style={{ margin: "0.35rem 0 0 0", fontWeight: 600 }} lang="hi">
-                    {item.adapted.adapted_hindi.join(" ")}
-                  </p>
-                </div>
-              )}
 
               {item.translations?.length > 0 && (
                 <div style={{ marginTop: "1rem" }}>
@@ -506,14 +636,17 @@ export default function Result({
                     <div key={tIdx} className="hero-script-display">
                       <div className="lang-card-header">
                         <span className="lang-name">{t.name}</span>
-                        <span className="chip-badge chip-badge--full">{capabilityBadge(t)}</span>
+                        <span className="chip-badge chip-badge--full">
+                          {capabilityBadge(t)}
+                        </span>
                       </div>
                       <div className="target-script-large" lang={t.code}>
                         {t.translated}
                       </div>
                       {t.contaminated && (
                         <span className="warn">
-                          The model does not recognise a word in this sentence, so part of this line is in the wrong script.
+                          The model does not recognise a word in this sentence,
+                          so part of this line is in the wrong script.
                         </span>
                       )}
                     </div>
@@ -521,89 +654,112 @@ export default function Result({
                 </div>
               )}
 
-              {item.audio && Object.keys(item.audio).length > 0 && (
-                <div style={{ marginTop: "1rem" }}>
-                  {Object.entries(item.audio).map(([langCode, a]) => {
-                    const langObj = chosen.find((c) => c.code === langCode);
-                    const langName = langObj ? langObj.name : langCode;
-                    return (
-                      <div key={langCode} style={{ marginBottom: "0.75rem" }}>
-                        {a.kind === "audio" && (
-                          <div className="hero-script-display" style={{ borderLeft: "4px solid var(--amber)" }}>
-                            <div className="lang-card-header">
-                              <span className="lang-name">{langName}</span>
-                              <span className="chip-badge chip-badge--phrase_bank">Phrase bank voice</span>
-                            </div>
-                            {/* Phase 12: Prominent native script display */}
-                            {a.targetText ? (
-                              <div className="target-script-large" lang={langCode}>
-                                {a.targetText}
-                              </div>
-                            ) : (
-                              <div className="target-script-large" lang="hi">
-                                {a.text}
-                              </div>
-                            )}
-                            <AudioPlayer blob={a.blob} label={`${langName} spoken audio`} />
+              <div style={{ marginTop: "1rem" }}>
+                {chosen.map((language) => {
+                  const langCode = language.code;
+                  const langName = language.name;
+                  const a = item.audio ? item.audio[langCode] : null;
+
+                  return (
+                    <div key={langCode} style={{ marginBottom: "0.75rem" }}>
+                      {a?.kind === "audio" && (
+                        <div
+                          className="hero-script-display"
+                          style={{ borderLeft: "4px solid var(--amber)" }}
+                        >
+                          <div className="lang-card-header">
+                            <span className="lang-name">{langName}</span>
+                            <span className="chip-badge chip-badge--phrase_bank">
+                              Classroom voice
+                            </span>
                           </div>
-                        )}
-                        {a.kind === "phrase_bank_only" && (
-                          <p className="note" style={{ margin: "0.25rem 0" }}>
-                            {langName}: Phrase bank only.
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                          {a.targetText ? (
+                            <div className="target-script-large" lang={langCode}>
+                              {a.targetText}
+                            </div>
+                          ) : (
+                            <div className="target-script-large" lang="hi">
+                              {a.text}
+                            </div>
+                          )}
+                          <AudioPlayer
+                            blob={a.blob}
+                            label={`${langName} spoken audio`}
+                          />
+                        </div>
+                      )}
+                      {a?.kind === "loading" && (
+                        <p
+                          className="note"
+                          style={{
+                            margin: "0.25rem 0",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <span
+                            className="spinner"
+                            aria-hidden="true"
+                            style={{
+                              width: "14px",
+                              height: "14px",
+                              margin: 0,
+                            }}
+                          />
+                          Synthesizing {langName} audio…
+                        </p>
+                      )}
+                      {(!a || a?.kind === "error") && language.tts === "full" && (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            marginTop: "0.25rem",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className="button button--secondary"
+                            style={{
+                              padding: "0.25rem 0.6rem",
+                              fontSize: "0.8rem",
+                            }}
+                            onClick={() =>
+                              generateAudioForSentence(idx, langCode)
+                            }
+                          >
+                            <span className="material-symbols-outlined text-sm">
+                              volume_up
+                            </span>
+                            <span>Generate {langName} Voice</span>
+                          </button>
+                          {a?.kind === "error" && (
+                            <span
+                              className="error"
+                              style={{ fontSize: "0.75rem" }}
+                            >
+                              {a.error}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {a?.kind === "phrase_bank_only" && (
+                        <p className="note" style={{ margin: "0.25rem 0" }}>
+                          {langName}: Phrase bank only.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </article>
           ))}
         </div>
       ) : (
         /* Single Sentence Mode */
         <>
-          {simplifyError && (
-            <div className="panel">
-              <h2>Simplified Hindi</h2>
-              <p className="error">
-                The lesson could not be simplified this time. {simplifyError}
-              </p>
-              <p className="note">
-                Anything below that does not need this step is unaffected.
-              </p>
-            </div>
-          )}
-
-          {adapted && (
-            <div className="panel panel--simplified">
-              <div className="panel-header">
-                <h2>Simplified Hindi <span lang="hi">(आसान हिंदी)</span></h2>
-                <span className="concept-badge">Class {grade}</span>
-              </div>
-              <p className="group-blurb">
-                <strong>Concept:</strong> {adapted.concept} — rewritten for a child whose mother tongue is not Hindi.
-              </p>
-              <ol className="sentence-list" lang="hi">
-                {adapted.adapted_hindi.map((sentence, i) => (
-                  <li key={i}>{sentence}</li>
-                ))}
-              </ol>
-              {adapted.substitutions.length > 0 && (
-                <ul className="subs">
-                  {adapted.substitutions.map((s, i) => (
-                    <li key={i}>
-                      <strong>{s.from}</strong> → <strong>{s.to}</strong> — {s.why}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <p className="note">
-                Readability: {adapted.readability.before_wps} words/sentence originally →{" "}
-                <strong>{adapted.readability.after_wps} words/sentence</strong> adapted.
-              </p>
-            </div>
-          )}
 
           {chosen.map((language) => {
             const mine = translations.filter((t) => t.code === language.code);

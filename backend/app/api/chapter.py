@@ -67,18 +67,52 @@ def ocr_pdf_page(page_obj=None, pypdfium_page=None) -> str:
     return ""
 
 
+def clean_and_unwrap_text(raw_text: str) -> str:
+    """Join soft line wraps within paragraphs and strip textbook headers/page noise."""
+    if not raw_text:
+        return ""
+    cleaned = re.sub(r"\(cid:\d+\)", "", raw_text)
+    raw_lines = [l.strip() for l in cleaned.splitlines() if l.strip()]
+
+    boilerplate_pattern = re.compile(
+        r"^(पाठ\s*\d+|अभ्यास|पृष्ठ\s*\d+|page\s*\d+|\d+|NCERT|JCERT)$",
+        re.IGNORECASE,
+    )
+    filtered_lines = [l for l in raw_lines if not boilerplate_pattern.match(l)]
+
+    unwrapped = []
+    buf = ""
+    for line in filtered_lines:
+        if not buf:
+            buf = line
+        elif buf.endswith(("।", "॥", "?", "!", ":")):
+            unwrapped.append(buf)
+            buf = line
+        else:
+            buf = buf + " " + line
+    if buf:
+        unwrapped.append(buf)
+
+    full = " ".join(unwrapped)
+    return re.sub(r"[ \t]+", " ", full).strip()
+
+
 def split_hindi_sentences(raw_text: str) -> List[str]:
     """Split raw text into clean Hindi sentences, filtering noise and preserving punctuation."""
     if not raw_text:
         return []
-    # Strip any leftover cid artifacts
-    cleaned_raw = re.sub(r"\(cid:\d+\)", "", raw_text)
-    matches = SENTENCE_PATTERN.findall(cleaned_raw)
+    unwrapped_text = clean_and_unwrap_text(raw_text)
+    if not unwrapped_text:
+        return []
+
+    # Match sentences delimited by Hindi/standard terminators (। ॥ ? !)
+    raw_matches = re.findall(r"[^।॥\?!]+[।॥\?!]?", unwrapped_text)
     sentences = []
-    for match in matches:
+    for match in raw_matches:
         cleaned = re.sub(r"\s+", " ", match).strip()
-        # Must have reasonable length and contain actual Hindi or Latin letters
-        if len(cleaned) >= 3 and any(
+        words = cleaned.split()
+        # Require at least 3 words and 8 characters with readable Hindi/Latin script
+        if len(words) >= 3 and len(cleaned) >= 8 and any(
             ("\u0900" <= c <= "\u097F") or c.isalpha() for c in cleaned
         ):
             if not cleaned.endswith(("।", "॥", "?", "!")):
@@ -177,6 +211,7 @@ async def extract_chapter(file: UploadFile = File(...)):
         raw_text = extract_text_from_pdf(file_bytes)
 
     sentences = split_hindi_sentences(raw_text)
+    full_text = clean_and_unwrap_text(raw_text)
 
     if not sentences:
         raise HTTPException(
@@ -187,6 +222,7 @@ async def extract_chapter(file: UploadFile = File(...)):
 
     return {
         "filename": file.filename,
+        "full_text": full_text,
         "sentences": sentences,
         "count": len(sentences),
     }

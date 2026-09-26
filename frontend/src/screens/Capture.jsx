@@ -60,7 +60,7 @@ export default function Capture({
       const result = await extractChapter(file);
       if (result.sentences && result.sentences.length > 0) {
         setChapterSentences(result.sentences);
-        setHindiText(result.sentences.join("\n"));
+        setHindiText(result.full_text || result.sentences.join(" "));
         setSourceType("pdf_chapter");
       }
     } catch (e) {
