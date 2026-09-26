@@ -1177,17 +1177,44 @@ export default function QuizLab({ lessonText, currentGrade = 2 }) {
   const [isFinished, setIsFinished] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [audioError, setAudioError] = useState(null);
+  const [quizSeed, setQuizSeed] = useState(1);
 
   const fileInputRef = useRef(null);
 
-  // Active questions determined by mode
-  const questions = useMemo(() => {
-    if (quizMode === "chapter_pdf" && chapterQuizQuestions.length > 0) {
-      return chapterQuizQuestions;
+  // Helper to pseudo-randomly shuffle options so the correct answer is not always Option A
+  function shuffleOptions(options, seedStr = "") {
+    if (!options || options.length <= 1) return options;
+    const arr = options.map((opt) => ({ ...opt }));
+    let seed = 0;
+    for (let i = 0; i < seedStr.length; i++) {
+      seed = (seed * 31 + seedStr.charCodeAt(i)) & 0xffffffff;
     }
-    const gradeBank = GRADE_WISE_QUESTION_BANK[selectedGrade] || GRADE_WISE_QUESTION_BANK[2];
-    return gradeBank[selectedLang] || gradeBank.sat;
-  }, [quizMode, chapterQuizQuestions, selectedGrade, selectedLang]);
+    for (let i = arr.length - 1; i > 0; i--) {
+      seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+      const j = Math.abs(seed) % (i + 1);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Active questions determined by mode with shuffled options
+  const questions = useMemo(() => {
+    let raw = [];
+    if (quizMode === "chapter_pdf" && chapterQuizQuestions.length > 0) {
+      raw = chapterQuizQuestions;
+    } else {
+      const gradeBank = GRADE_WISE_QUESTION_BANK[selectedGrade] || GRADE_WISE_QUESTION_BANK[2];
+      raw = gradeBank[selectedLang] || gradeBank.sat;
+    }
+
+    return raw.map((q, idx) => ({
+      ...q,
+      options: shuffleOptions(
+        q.options,
+        `${q.id || idx}-${selectedGrade}-${selectedLang}-${quizSeed}`
+      ),
+    }));
+  }, [quizMode, chapterQuizQuestions, selectedGrade, selectedLang, quizSeed]);
 
   const currentQ = questions[currentIndex] || questions[0];
 
@@ -1200,6 +1227,7 @@ export default function QuizLab({ lessonText, currentGrade = 2 }) {
     setScore(0);
     setIsFinished(false);
     setAudioError(null);
+    setQuizSeed((s) => s + 1);
   }
 
   function handleSelectOption(optionIndex) {
