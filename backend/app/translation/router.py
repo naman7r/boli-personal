@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional
 from functools import lru_cache
 
 from .segmentation import segment_text, reconstruct_text
-from .validation import validate_script, contains_meetei_mayek
+from .validation import validate_script, contains_meetei_mayek, sanitize_script_leakage
 from .engines import (
     IndicTransEngine,
     KurukhEngine,
@@ -157,7 +157,10 @@ class TranslationRouter:
         translated_items = [(segmented_items[i][0], translated_sentences[i]) for i in range(len(segmented_items))]
         final_text = reconstruct_text(text, translated_items)
 
-        # 5. Script validation & leakage checks
+        # 5. Auto-sanitize known cross-script leakages (e.g. Meetei Mayek into Ol Chiki)
+        final_text = sanitize_script_leakage(final_text, tgt_norm)
+
+        # 6. Script validation & leakage checks
         is_valid, warnings = validate_script(final_text, tgt_norm)
         is_contaminated = contains_meetei_mayek(final_text)
 

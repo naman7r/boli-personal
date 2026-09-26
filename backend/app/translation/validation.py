@@ -13,10 +13,43 @@ _MEETEI_MAYEK = ((0xABC0, 0xABFF), (0xAAE0, 0xAAFF))
 _OL_CHIKI = (0x1C50, 0x1C7F)
 _DEVANAGARI = (0x0900, 0x097F)
 
+# Known IndicTrans2 Meetei Mayek leakage dictionary to standard Ol Chiki
+MEETEI_TO_OL_CHIKI_MAP = {
+    "ꯎꯆꯦꯛꯁꯤꯡ": "ᱪᱮᱬᱮ ᱠᱚ",  # birds / चिड़ियाँ
+    "ꯎꯆꯦꯛ": "ᱪᱮᱬᱮ",       # bird / चिड़िया
+    "ꯏꯁꯤꯡ": "ᱫᱟᱜ",          # water / पानी
+    "ꯎ": "ᱫᱟᱨᱮ",             # tree / पेड़
+    "ꯃꯤ": "ᱦᱚᱲ",             # person / आदमी
+    "ꯉꯥ": "ᱦᱟᱹᱠᱩ",           # fish / मछली
+}
+
 
 def contains_meetei_mayek(text: str) -> bool:
     """Return True if IndicTrans2 leaked Meetei Mayek script characters."""
     return any(lo <= ord(ch) <= hi for ch in text for lo, hi in _MEETEI_MAYEK)
+
+
+def sanitize_script_leakage(text: str, target_lang: str) -> str:
+    """Auto-sanitize known cross-script leakages (e.g. Meetei Mayek leaking into Ol Chiki)."""
+    lang_clean = target_lang.lower().split('_')[0]
+    if lang_clean != 'sat' or not contains_meetei_mayek(text):
+        return text
+
+    sanitized = text
+    # 1. Apply known word substitutions
+    for mm_word, ol_word in MEETEI_TO_OL_CHIKI_MAP.items():
+        if mm_word in sanitized:
+            sanitized = sanitized.replace(mm_word, ol_word)
+
+    # 2. If any stray Meetei Mayek characters remain, remove them cleanly
+    if contains_meetei_mayek(sanitized):
+        cleaned_chars = [
+            ch for ch in sanitized
+            if not any(lo <= ord(ch) <= hi for lo, hi in _MEETEI_MAYEK)
+        ]
+        sanitized = "".join(cleaned_chars)
+
+    return sanitized
 
 
 def validate_script(text: str, target_lang: str) -> Tuple[bool, List[str]]:
@@ -38,3 +71,4 @@ def validate_script(text: str, target_lang: str) -> Tuple[bool, List[str]]:
             warnings.append("Script mismatch: expected Ol Chiki for Santali, found untranslated Devanagari.")
 
     return len(warnings) == 0, warnings
+
