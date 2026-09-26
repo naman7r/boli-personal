@@ -42,14 +42,14 @@ export default function Result({
     let cancelled = false;
 
     async function run() {
-      const fullLessonText = (
-        hindiText ||
-        (chapterSentences && chapterSentences.length > 0
-          ? chapterSentences.join(" ")
-          : "")
-      ).trim();
+      const sentenceList =
+        chapterSentences && chapterSentences.length > 0
+          ? chapterSentences
+          : [hindiText].filter(Boolean);
 
-      if (!fullLessonText) return;
+      if (sentenceList.length === 0) return;
+
+      const fullLessonText = sentenceList.join(" ").trim();
 
       try {
         const all = await fetchLanguages();
@@ -57,155 +57,187 @@ export default function Result({
         const picked = all.filter((l) => selectedLangs.includes(l.code));
         setChosen(picked);
 
-        // 0. Record lesson submission
-        try {
-          const lesson = await createLesson({
-            sourceText: fullLessonText,
-            sourceType,
-            languages: selectedLangs,
+        // 0. Record lesson submission in background
+        createLesson({
+          sourceText: fullLessonText,
+          sourceType,
+          languages: selectedLangs,
+        })
+          .then((lesson) => {
+            if (!cancelled && lesson?.id) setLessonId(lesson.id);
+          })
+          .catch(() => {});
+
+        // 1. Kick off pedagogical simplification in BACKGROUND (never blocks translation)
+        simplify(fullLessonText, grade)
+          .then((res) => {
+            if (!cancelled) setAdapted(res);
+          })
+          .catch((e) => {
+            if (!cancelled) {
+              console.warn("Pedagogy simplification failed:", e);
+              setSimplifyError(e.message);
+            }
           });
-          if (cancelled) return;
-          setLessonId(lesson.id);
-        } catch {
-          // Non-fatal logging
-        }
 
-        // 1. Holistic Pedagogical Simplification (ONE single call for the entire chapter)
-        setStage(`Adapting lesson for Class ${grade} with tribal cultural grounding…`);
-        let simplified = null;
-        try {
-          simplified = await simplify(fullLessonText, grade);
-          if (cancelled) return;
-          setAdapted(simplified);
-        } catch (e) {
-          if (cancelled) return;
-          console.warn("Pedagogy simplification failed:", e);
-          setSimplifyError(e.message);
-        }
+        // 2. Handle Single Sentence Mode (Instantaneous & Streaming)
+        if (sentenceList.length === 1) {
+          const currentText = sentenceList[0];
+          setStage(`Translating lesson…`);
 
-        // 2. Determine sentences to present, translate, and synthesize
-        let sentencesToProcess = [];
-        if (simplified?.adapted_hindi?.length > 0) {
-          sentencesToProcess = simplified.adapted_hindi;
-        } else if (chapterSentences && chapterSentences.length > 0) {
-          sentencesToProcess = chapterSentences;
-        } else {
-          sentencesToProcess = [fullLessonText];
-        }
+          // Fast parallel translation: stream each language into state as soon as it resolves
+          const transPromises = picked.map(async (language) => {
+            const target = translateTargetFor(language);
+            if (!target) return;
+            try {
+              const res = await translate(currentText, target);
+              if (cancelled) return;
+              const transObj = {
+                code: language.code,
+                name: language.name,
+                sentence: currentText,
+                translated: res.translated,
+                contaminated: res.script_contamination,
+              };
 
-        // 3. Parallel Multilingual Translation across all sentences & picked languages
-        setStage(
-          `Translating sentences into ${picked.map((l) => l.name).join(", ")}…`
-        );
+              setTranslations((prev) => {
+                const filtered = prev.filter((t) => t.code !== language.code);
+                return [...filtered, transObj];
+              });
 
-        const sentenceResults = await Promise.all(
-          sentencesToProcess.map(async (sentText, idx) => {
-            const sentTranslations = [];
-            await Promise.all(
-              picked.map(async (language) => {
-                const target = translateTargetFor(language);
-                if (!target) return;
-                try {
-                  const res = await translate(sentText, target);
-                  sentTranslations.push({
-                    code: language.code,
-                    name: language.name,
-                    sentence: sentText,
-                    translated: res.translated,
-                    contaminated: res.script_contamination,
+              // Synthesize full voice speech as soon as translation arrives
+              if (
+                language.tts === "full" &&
+                !speaksWithoutPedagogy(language) &&
+                res.translated
+              ) {
+                speak(res.translated, language.code)
+                  .then((audioRes) => {
+                    if (!cancelled) {
+                      setAudio((prev) => ({
+                        ...prev,
+                        [language.code]: { ...audioRes, text: res.translated },
+                      }));
+                    }
+                  })
+                  .catch((err) => {
+                    if (!cancelled) {
+                      setAudio((prev) => ({
+                        ...prev,
+                        [language.code]: { kind: "error", error: err.message },
+                      }));
+                    }
                   });
-                } catch (transErr) {
-                  console.warn(
-                    `Translation error for ${language.name}:`,
-                    transErr
-                  );
+              }
+
+              return transObj;
+            } catch (err) {
+              console.warn(`Translation error for ${language.name}:`, err);
+            }
+          });
+
+          // Concurrently speak phrase-bank languages
+          for (const language of picked.filter(speaksWithoutPedagogy)) {
+            speak(currentText, language.code)
+              .then((audioRes) => {
+                if (!cancelled) {
+                  setAudio((prev) => ({
+                    ...prev,
+                    [language.code]: { ...audioRes, text: currentText },
+                  }));
                 }
               })
-            );
+              .catch((err) => {
+                if (!cancelled) {
+                  setAudio((prev) => ({
+                    ...prev,
+                    [language.code]: { kind: "error", error: err.message },
+                  }));
+                }
+              });
+          }
 
-            return {
-              sentenceIndex: idx,
-              sourceText: sentText,
-              translations: sentTranslations,
-              audio: {},
-            };
-          })
-        );
-
-        if (cancelled) return;
-
-        if (sentenceResults.length > 0) {
-          setTranslations(sentenceResults[0].translations);
+          await Promise.all(transPromises);
+          if (!cancelled) setStage("");
+          return;
         }
-        setChapterResults(sentenceResults);
 
-        // 4. Synthesize Sentence 1 audio immediately for instant playback
-        setStage("Synthesizing classroom audio…");
-        const firstSentence = sentenceResults[0];
-        if (firstSentence) {
-          const firstAudio = {};
+        // 3. Handle Multi-sentence Chapter Mode (Progressive Streaming)
+        setStage(`Translating chapter (${sentenceList.length} sentences)…`);
+        const accumulatedResults = [];
+
+        // Helper to translate one sentence across all picked languages
+        async function processSentence(sentText, sIdx) {
+          const sentTranslations = [];
+          const sAudio = {};
+
           await Promise.all(
             picked.map(async (language) => {
-              let textToSpeak = firstSentence.sourceText;
-              const mine = firstSentence.translations.find(
-                (t) => t.code === language.code
-              );
-              if (
-                mine?.translated &&
-                language.tts === "full" &&
-                !speaksWithoutPedagogy(language)
-              ) {
-                textToSpeak = mine.translated;
-              }
+              const target = translateTargetFor(language);
+              if (!target) return;
               try {
-                const res = await speak(textToSpeak, language.code);
-                firstAudio[language.code] = { ...res, text: textToSpeak };
+                const res = await translate(sentText, target);
+                sentTranslations.push({
+                  code: language.code,
+                  name: language.name,
+                  sentence: sentText,
+                  translated: res.translated,
+                  contaminated: res.script_contamination,
+                });
               } catch (e) {
-                firstAudio[language.code] = { kind: "error", error: e.message };
+                console.warn(`Translation error for ${language.name}:`, e);
               }
             })
           );
 
-          if (cancelled) return;
-          firstSentence.audio = firstAudio;
-          setAudio(firstAudio);
-          setChapterResults([...sentenceResults]);
-        }
-
-        setStage("");
-
-        // 5. Asynchronous background audio synthesis for remaining sentences (non-blocking)
-        (async () => {
-          for (let sIdx = 1; sIdx < sentenceResults.length; sIdx++) {
-            if (cancelled) break;
-            const sentItem = sentenceResults[sIdx];
-            const sAudio = {};
-            for (const language of picked) {
-              if (cancelled) break;
-              let textToSpeak = sentItem.sourceText;
-              const mine = sentItem.translations.find(
-                (t) => t.code === language.code
-              );
-              if (
-                mine?.translated &&
-                language.tts === "full" &&
-                !speaksWithoutPedagogy(language)
-              ) {
-                textToSpeak = mine.translated;
-              }
-              try {
-                const res = await speak(textToSpeak, language.code);
-                sAudio[language.code] = { ...res, text: textToSpeak };
-              } catch (e) {
-                sAudio[language.code] = { kind: "error", error: e.message };
-              }
-            }
-            sentItem.audio = sAudio;
+          // Synthesize audio for sentence 0 immediately for instant playback
+          if (sIdx === 0) {
+            await Promise.all(
+              picked.map(async (language) => {
+                let textToSpeak = sentText;
+                const mine = sentTranslations.find((t) => t.code === language.code);
+                if (mine?.translated && language.tts === "full" && !speaksWithoutPedagogy(language)) {
+                  textToSpeak = mine.translated;
+                }
+                try {
+                  const aRes = await speak(textToSpeak, language.code);
+                  sAudio[language.code] = { ...aRes, text: textToSpeak };
+                } catch (err) {
+                  sAudio[language.code] = { kind: "error", error: err.message };
+                }
+              })
+            );
             if (!cancelled) {
-              setChapterResults([...sentenceResults]);
+              setAudio(sAudio);
+              setTranslations(sentTranslations);
             }
           }
-        })();
+
+          return {
+            sentenceIndex: sIdx,
+            sourceText: sentText,
+            translations: sentTranslations,
+            audio: sAudio,
+          };
+        }
+
+        // Step A: Immediately translate & render Sentence 1
+        const firstResult = await processSentence(sentenceList[0], 0);
+        if (cancelled) return;
+        accumulatedResults.push(firstResult);
+        setChapterResults([...accumulatedResults]);
+        setStage(sentenceList.length > 1 ? `Sentence 1 ready. Processing remaining chapter…` : "");
+
+        // Step B: Progressively translate remaining sentences
+        for (let i = 1; i < sentenceList.length; i++) {
+          if (cancelled) break;
+          const result = await processSentence(sentenceList[i], i);
+          if (cancelled) break;
+          accumulatedResults.push(result);
+          setChapterResults([...accumulatedResults]);
+        }
+
+        if (!cancelled) setStage("");
       } catch (e) {
         if (cancelled) return;
         setError(e.message);
