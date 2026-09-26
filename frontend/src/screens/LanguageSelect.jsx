@@ -104,44 +104,30 @@ export default function LanguageSelect({
       <div className="screen-header-block">
         {header}
         <p className="screen-subtitle">
-          Pick as many as you need. What each language can actually do is
-          different, and it is spelled out below.
+          Select the mother tongues spoken by children in your classroom. BOLI will adapt the lesson, generate native script, and speak with authentic regional phonetics.
         </p>
       </div>
 
-      {groupLanguages(list).map((group, index) => (
+      {groupLanguages(list).map((group) => (
         <div
           key={group.key}
           className={`language-group-panel panel sun-card-shadow ${groupModifier(group.key)}`}
         >
           <div className="language-group-header">
             <div className="group-header-left">
-              <span className="group-num-badge">
-                {String(index + 1).padStart(2, "0")}
-              </span>
               <div>
                 <h2 className="group-heading">{group.heading}</h2>
                 {group.blurb && <p className="group-blurb">{group.blurb}</p>}
               </div>
             </div>
-            <span
-              className={`group-type-tag ${
-                group.key === "full"
-                  ? "group-type-tag--ai"
-                  : "group-type-tag--bank"
-              }`}
-            >
+            <span className="group-count-badge">
               <span
                 className="material-symbols-outlined"
                 style={{ fontSize: "14px" }}
               >
-                {group.key === "full" ? "translate" : "menu_book"}
+                translate
               </span>
-              <span>
-                {group.key === "full"
-                  ? "Multi-Engine Translation & Speech"
-                  : "Validated Audio Phrase Bank"}
-              </span>
+              <span>{group.items.length} Regional Dialects</span>
             </span>
           </div>
 

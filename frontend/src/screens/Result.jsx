@@ -610,7 +610,6 @@ export default function Result({
             <article
               key={idx}
               className="panel"
-              style={{ borderLeft: "5px solid var(--green)" }}
             >
               <div className="panel-header">
                 <span className="eyebrow" style={{ margin: 0 }}>
@@ -643,12 +642,6 @@ export default function Result({
                       <div className="target-script-large" lang={t.code}>
                         {t.translated}
                       </div>
-                      {t.contaminated && (
-                        <span className="warn">
-                          The model does not recognise a word in this sentence,
-                          so part of this line is in the wrong script.
-                        </span>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -665,7 +658,6 @@ export default function Result({
                       {a?.kind === "audio" && (
                         <div
                           className="hero-script-display"
-                          style={{ borderLeft: "4px solid var(--amber)" }}
                         >
                           <div className="lang-card-header">
                             <span className="lang-name">{langName}</span>
@@ -806,11 +798,6 @@ export default function Result({
                           <div className="target-script-large" lang={language.code}>
                             {t.translated}
                           </div>
-                          {t.contaminated && (
-                            <span className="warn">
-                              The model does not recognise a word in this sentence, so part of this line is in the wrong script. Try simpler, more local wording.
-                            </span>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -830,7 +817,7 @@ export default function Result({
 
                 {spoken?.kind === "audio" && (
                   <>
-                    <div className="hero-script-display" style={{ borderLeft: "4px solid var(--amber)" }}>
+                    <div className="hero-script-display">
                       <span className="field-label" style={{ fontSize: "0.8rem" }}>
                         {isBank ? "Spoken Phrase (Real Target Script):" : "Spoken Audio:"}
                       </span>

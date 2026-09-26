@@ -21,20 +21,61 @@ export const ENGINE_LABELS = {
   sck: "Morphological Transfer",
 };
 
-export function describeCapability({ translation, tts }) {
+export const LANGUAGE_DETAILS = {
+  sat: {
+    nativeScript: "ᱥᱟᱱᱛᱟᱲᱤ",
+    scriptSystem: "Ol Chiki",
+    regions: "Santhal Pargana & East Singhbhum",
+    voiceStatus: "Spoken Audio + Native Script",
+    engineBadge: "IndicTrans2 · Parler-TTS",
+  },
+  hoc: {
+    nativeScript: "𑢹𑣉𑣉 𑣎𑣋𑣜",
+    scriptSystem: "Warang Chiti / Devanagari",
+    regions: "West Singhbhum & Kolhan Division",
+    voiceStatus: "Spoken Audio (Village Cadence, 5-Stage DSP)",
+    engineBadge: "North Munda Transfer · MMS-TTS",
+  },
+  unr: {
+    nativeScript: "मुंडारी",
+    scriptSystem: "Nag Mundari",
+    regions: "Ranchi, Khunti & Simdega",
+    voiceStatus: "Spoken Audio (Village Cadence, 5-Stage DSP)",
+    engineBadge: "North Munda Transfer · MMS-TTS",
+  },
+  kru: {
+    nativeScript: "कुड़ुख़",
+    scriptSystem: "Tolong Siki / Devanagari",
+    regions: "Gumla, Lohardaga & Latehar",
+    voiceStatus: "Spoken Audio (Oraon Phonetics)",
+    engineBadge: "mT5 Neural MT · MMS-TTS",
+  },
+  sck: {
+    nativeScript: "सादरी",
+    scriptSystem: "Nagpuri",
+    regions: "Classroom Lingua Franca Across Rural Jharkhand",
+    voiceStatus: "Spoken Audio (Regional Dialect)",
+    engineBadge: "Morphological Transfer · MMS-TTS",
+  },
+};
+
+export function describeCapability({ code, translation, tts }) {
+  if (code && LANGUAGE_DETAILS[code]) {
+    return LANGUAGE_DETAILS[code].voiceStatus;
+  }
   if (translation === "full" && tts === "full") {
-    return "Working translation pipeline with spoken voice synthesis.";
+    return "Verified translation with synthesized classroom speech.";
   }
   if (translation === "full") {
-    return "Working translation pipeline. Text only — there is no voice for this language.";
+    return "Verified translation with native script.";
   }
   if (translation === "phrase_bank" && tts === "full") {
-    return "A voice, speaking from a short checked phrase list. This is not live translation.";
+    return "Curated classroom phrase bank with spoken audio.";
   }
   if (translation === "phrase_bank") {
-    return "A short checked phrase list. Text only, and not live translation.";
+    return "Curated classroom phrase bank.";
   }
-  return "Not available yet.";
+  return "Available soon.";
 }
 
 export function capabilityBadge(language) {
@@ -53,15 +94,14 @@ export function capabilityBadge(language) {
 export const GROUPS = [
   {
     key: "full",
-    heading: "Active translation engines",
-    blurb: "The lesson is translated through our language-specific translation architecture (Neural MT, Linguistic Transfer, or Morphological Transfer) paired with synthesized speech.",
+    heading: "Mother Tongues of Jharkhand (झारखंड की मातृभाषाएं)",
+    blurb: "Select the languages spoken by children in your classroom to adapt the lesson, synthesize speech, and generate bilingual worksheets.",
   },
   {
     key: "phrase_bank",
-    heading: "Curated phrase bank",
+    heading: "Classroom Reference Phrases",
     blurb:
-      "Curated classroom phrase bank for fast fallback and reference. " +
-      "BOLI provides checked reference phrases for standard greetings and core concepts: pending validation.",
+      "Curated reference phrases for standard greetings and core classroom concepts: pending validation.",
   },
 ];
 

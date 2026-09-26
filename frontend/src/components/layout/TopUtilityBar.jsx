@@ -195,67 +195,29 @@ export default function TopUtilityBar({ activeLang, onToggleLang }) {
           {/* Feature 4: Low-End Tablet Mode & 2GB RAM Inspector Button */}
           <button
             type="button"
-            className="scale-btn"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 9px",
-              fontSize: "12px",
-              borderRadius: "4px",
-              background: "rgba(254, 166, 25, 0.22)",
-              border: "1px solid rgba(254, 166, 25, 0.55)",
-              color: "#ffddb8",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}
+            className="top-utility-pill"
             onClick={() => setShowTabletModal(true)}
             title="Inspect 2GB Tablet RAM Footprint & Zero-Connectivity Offline Mode"
           >
             <span className="material-symbols-outlined text-xs">tablet_mac</span>
-            <span>📱 2GB Tablet & Offline Mode</span>
+            <span>Tablet & Offline (2GB)</span>
           </button>
 
           {/* State Pilot & DIET Oversight Inspector Button */}
           <button
             type="button"
-            className="scale-btn"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 9px",
-              fontSize: "12px",
-              borderRadius: "4px",
-              background: "rgba(56, 189, 248, 0.18)",
-              border: "1px solid rgba(56, 189, 248, 0.45)",
-              color: "#bae6fd",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}
+            className="top-utility-pill"
             onClick={() => setShowGovernanceModal(true)}
             title="Inspect 5-District JCERT Pilot & DIET Review Protocol"
           >
-            <span className="material-symbols-outlined text-xs">account_balance</span>
-            <span>🏛️ State Pilot & DIET Oversight</span>
+            <span className="material-symbols-outlined text-xs">verified</span>
+            <span>State Pilot & DIET</span>
           </button>
 
           {/* Backend Connection Status Badge & Modal Trigger */}
           <button
             type="button"
-            className="scale-btn"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 8px",
-              fontSize: "12px",
-              borderRadius: "4px",
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              color: "#fff",
-              cursor: "pointer",
-            }}
+            className="top-utility-pill status-pill"
             onClick={() => {
               setCustomUrl(getApiBase());
               setTestResult(null);
@@ -264,29 +226,20 @@ export default function TopUtilityBar({ activeLang, onToggleLang }) {
             title="Configure Backend API Connection"
           >
             <span
-              style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                background:
-                  backendStatus === "online"
-                    ? "#22c55e"
-                    : backendStatus === "checking"
-                    ? "#eab308"
-                    : "#ef4444",
-                boxShadow:
-                  backendStatus === "online"
-                    ? "0 0 6px #22c55e"
-                    : "none",
-                display: "inline-block",
-              }}
+              className={`status-dot ${
+                backendStatus === "online"
+                  ? "online"
+                  : backendStatus === "checking"
+                  ? "checking"
+                  : "offline"
+              }`}
             />
             <span>
               {backendStatus === "online"
-                ? "Backend: Online"
+                ? "Engine Online"
                 : backendStatus === "checking"
-                ? "Connecting..."
-                : "Backend: Offline"}
+                ? "Connecting…"
+                : "Offline"}
             </span>
           </button>
 
