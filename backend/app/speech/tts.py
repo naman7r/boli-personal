@@ -15,6 +15,7 @@ from functools import lru_cache
 
 import numpy as np
 import scipy.io.wavfile
+import scipy.signal
 import torch
 from transformers import AutoTokenizer, VitsModel
 
@@ -99,6 +100,15 @@ def _load_mms(lang: str):
     """Load once per language, keep for the process lifetime (ARCHITECTURE.md §4)."""
     ckpt = MODELS[lang]
     model = VitsModel.from_pretrained(ckpt)
+    # SIH 2026 Acoustic Mastering for Low-Resource Tribal VITS:
+    # 1. Speaking rate 0.78: Deliberate, clear primary school teacher pace (avoids rushed 0.6s chipmunk speech).
+    # 2. Noise scale 0.15: Suppresses random latent variance, eliminating metallic rasp and phase jitter.
+    # 3. Noise scale duration 0.3: Yields natural, stable phoneme durations.
+    # 4. Stochastic duration off: Deterministic duration prediction for crisp syllable boundaries.
+    model.speaking_rate = 0.78
+    model.noise_scale = 0.15
+    model.noise_scale_duration = 0.3
+    model.use_stochastic_duration_prediction = False
     model.eval()
     return model, AutoTokenizer.from_pretrained(ckpt)
 
@@ -111,6 +121,72 @@ def warmup(langs=None):
             _load_mms(lang)
 
 
+def enhance_audio(waveform: np.ndarray, sample_rate: int = 16000) -> tuple[np.ndarray, int]:
+    """DSP post-processing pipeline for MMS-TTS checkpoints.
+
+    Meta MMS models (Ho, Mundari, Kurukh, Sadri) produce 16kHz VITS speech
+    derived from field recordings, which suffer from high-frequency metallic
+    hiss, sub-rumble, and low dynamic presence.
+
+    Mastering Pipeline:
+    1. 2nd-order Butterworth bandpass filter (90 Hz high-pass to remove mic thumps/rumble,
+       7.0 kHz low-pass to eliminate harsh digital VITS aliasing & hiss).
+    2. Warmth & De-hiss EQ: Gentle low-pass smoothing above 4.2 kHz to remove
+       field-recording cassette hiss, combined with vocal presence enhancement.
+    3. Soft-knee compression / dynamic leveler: np.tanh(smoothed * 1.4) / 1.15
+       for rich, full, consistent classroom loudness without harsh clipping.
+    4. Anti-aliased sinc polyphase upsampling to 24 kHz for clean browser playback.
+    5. Final peak normalization to 0.94 (-0.5 dB headroom).
+    """
+    if len(waveform) == 0:
+        return waveform, sample_rate
+
+    # Ensure float32 in [-1.0, 1.0]
+    peak = np.max(np.abs(waveform))
+    if peak > 0:
+        audio = (waveform / peak).astype(np.float32)
+    else:
+        audio = waveform.astype(np.float32)
+
+    # 1. Bandpass filter: 90 Hz to 7000 Hz at sample_rate
+    try:
+        nyquist = sample_rate / 2.0
+        low = max(0.001, 90.0 / nyquist)
+        high = min(0.95, 7000.0 / nyquist)
+        b, a = scipy.signal.butter(2, [low, high], btype="bandpass")
+        bandpassed = scipy.signal.filtfilt(b, a, audio)
+    except Exception:
+        bandpassed = audio
+
+    # 2. De-hiss & Warmth smoothing: tame harsh 4.2kHz VITS rasp while retaining vocal clarity
+    try:
+        b_shelf, a_shelf = scipy.signal.butter(1, 4200.0 / nyquist, btype="lowpass")
+        smoothed = 0.85 * bandpassed + 0.15 * scipy.signal.filtfilt(b_shelf, a_shelf, bandpassed)
+    except Exception:
+        smoothed = bandpassed
+
+    # 3. Dynamic range compression: soft-knee tanh curve for full, consistent classroom loudness
+    compressed = np.tanh(smoothed * 1.4) / 1.15
+
+    # 4. Resample to 24000 Hz using Fourier sinc/polyphase for crisp fidelity
+    target_sr = 24000
+    try:
+        num_samples = int(len(compressed) * target_sr / sample_rate)
+        resampled = scipy.signal.resample(compressed, num_samples)
+    except Exception:
+        resampled = compressed
+        target_sr = sample_rate
+
+    # 5. Final peak normalization with headroom (-0.5 dB)
+    res_peak = np.max(np.abs(resampled))
+    if res_peak > 0:
+        norm = (resampled / res_peak) * 0.94
+    else:
+        norm = resampled
+
+    return (norm * 32767).astype(np.int16), target_sr
+
+
 def deva_to_odia(text: str, target_lang: str = "hoc") -> str:
     """Convert Devanagari text into Odia script for Ho and Mundari MMS-TTS.
 
@@ -120,15 +196,24 @@ def deva_to_odia(text: str, target_lang: str = "hoc") -> str:
     vowel decompositions, missing graphemes, and language-specific phonological
     substitutions for the checkpoint vocabularies.
     """
-    vowel_replacements = {
+    # Strip punctuation unsupported by MMS checkpoints to avoid <unk> glitches
+    text = re.sub(r"[!?,:;\"'()\\/\[\]{}]+", " ", text)
+
+    # Specific Devanagari phoneme adaptations for Ho and Mundari
+    deva_prep = {
         "\u0908": "\u0907",           # ई -> इ
         "\u090A": "\u0909",           # ऊ -> उ
         "\u090B": "\u0930\u093F",     # ऋ -> रि
         "\u0910": "\u0905\u0907",     # ऐ -> अइ
         "\u0913": "\u0905\u094B",     # ओ -> अो
         "\u0914": "\u0905\u0909",     # औ -> अउ
+        "\u0937": "\u0938",           # ष -> स
+        "\u0936": "\u0938",           # श -> स (Ho treats sibilants uniformly)
+        "\u0903": "\u0939",           # ः (visarga / glottal stop) -> ह (voiced aspirate)
+        "\u0943": "\u0941",           # ृ -> ु
+        "\u0944": "\u0941",           # ॄ -> ु
     }
-    for k, v in vowel_replacements.items():
+    for k, v in deva_prep.items():
         text = text.replace(k, v)
 
     res = []
@@ -145,16 +230,28 @@ def deva_to_odia(text: str, target_lang: str = "hoc") -> str:
     odia_str = "".join(res)
 
     if target_lang == "hoc":
+        # Checkpoint facebook/mms-tts-hoc vocab-specific mappings
+        # In Ho phonology, voiced aspirates and unvoiced aspirates are de-aspirated
+        # and unmapped Odia consonants map to available checkpoint tokens.
         hoc_map = {
-            "\u0B18": "\u0B17",  # ଘ -> ଗ
-            "\u0B20": "\u0B1F",  # ଠ -> ଟ
-            "\u0B27": "\u0B26",  # ଧ -> ଦ
-            "\u0B1B": "\u0B1A",  # ଛ -> ଚ
-            "\u0B1D": "\u0B1C",  # ଝ -> ଜ
+            "\u0B16": "\u0B15",  # ଖ -> କ (kh -> k)
+            "\u0B18": "\u0B17",  # ଘ -> ଗ (gh -> g)
+            "\u0B1B": "\u0B1A",  # ଛ -> ଚ (ch -> c)
+            "\u0B1D": "\u0B1C",  # ଝ -> ଜ (jh -> j)
+            "\u0B20": "\u0B1F",  # ଠ -> ଟ (th -> t)
+            "\u0B22": "\u0B21",  # ଢ -> ଡ (dh -> d)
+            "\u0B25": "\u0B24",  # ଥ -> ତ (th -> t)
+            "\u0B27": "\u0B26",  # ଧ -> ଦ (dh -> d)
+            "\u0B2B": "\u0B2A",  # ଫ -> ପ (ph -> p)
+            "\u0B2D": "\u0B2C",  # ଭ -> ବ (bh -> b)
             "\u0B3C": "",        # nukta dropped
             "\u0B37": "\u0B38",  # ଷ -> ସ
-            "\u0B2F": "\u0B5F",  # ଯ -> ୟ
-            "\u0B42": "\u0B41",  # ୂ -> ୁ
+            "\u0B36": "\u0B38",  # ଶ -> ସ
+            "\u0B2F": "\u0B5F",  # ଯ -> ୟ (ya glide)
+            "\u0B42": "\u0B41",  # ୂ -> ୁ (long u -> short u)
+            "\u0B40": "\u0B3F",  # ୀ -> ି (long i -> short i)
+            "\u0B48": "\u0B47",  # ୈ -> େ
+            "\u0B4C": "\u0B4B",  # ୌ -> ୋ
         }
         for k, v in hoc_map.items():
             odia_str = odia_str.replace(k, v)
@@ -228,15 +325,9 @@ def synthesize(text: str, lang: str, speaker_desc: str = None) -> bytes:
     with torch.no_grad():
         waveform = model(**inputs).waveform.cpu().float().numpy().squeeze()
 
-    max_val = np.max(np.abs(waveform))
-    if max_val > 0:
-        audio_norm = waveform / max(max_val, 1.0)
-    else:
-        audio_norm = waveform
-    audio_int16 = (audio_norm * 32767).astype(np.int16)
+    # Apply audio enhancement pipeline: filtering, warmth EQ, compression, anti-aliased 24kHz upsampling
+    audio_int16, out_sr = enhance_audio(waveform, sample_rate=model.config.sampling_rate)
 
     buf = io.BytesIO()
-    scipy.io.wavfile.write(
-        buf, rate=model.config.sampling_rate, data=audio_int16
-    )
+    scipy.io.wavfile.write(buf, rate=out_sr, data=audio_int16)
     return buf.getvalue()

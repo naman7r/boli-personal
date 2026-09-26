@@ -289,8 +289,6 @@ export default function Capture({
       </div>
 
       <div className="panel sun-card-shadow" style={{ position: "relative" }}>
-        {/* Pointer Spotlight Layer */}
-        <Spotlight size={360} color="rgba(254, 166, 25, 0.12)" />
         {/* Target Grade Level Selector with Pedagogy Guidance */}
         <div className="grade-selector-container">
           <div className="field-label">

@@ -2408,14 +2408,9 @@ body {
   transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* 3. Spotlight Pointer Glow */
+/* 3. Spotlight Pointer Glow (Clean UI - Disabled) */
 .spotlight-layer {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  z-index: 0;
+  display: none !important;
 }
 
 /* 4. Apple-Style Magnification Dock for Teachers */
@@ -6195,7 +6190,770 @@ body.high-contrast-mode .step-card {
   letter-spacing: 0.2px;
 }
 
+/* ==========================================================================
+   PERMANENT DEFAULT DARK STUDIO THEME
+   High-contrast, professional atmospheric educator console
+   ========================================================================== */
+body:not(.light-theme-override) {
+  --canvas: #09130d;
+  --bg: #09130d;
+  --surface: #111e15;
+  --surface-container-lowest: #0c160f;
+  --surface-container-low: #132219;
+  --surface-container: #182c20;
+  --surface-container-high: #1e3627;
+  --surface-container-highest: #254231;
+  --card: #122117;
+  --card-subtle: #162a1d;
+  --on-surface: #f1f5f2;
+  --on-surface-variant: #cbd5ce;
+  --text: #f1f5f2;
+  --text-muted: #94a398;
+  --text-light: #6e8274;
+  --line: #1e3828;
+  --line-strong: #2a4c37;
+  --outline: #385e46;
+  --outline-variant: #223f2d;
+}
 
+body:not(.light-theme-override) .screen-title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+}
 
+body:not(.light-theme-override) .screen-subtitle {
+  color: #d1d5db !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
 
+body:not(.light-theme-override) .app-header-bar {
+  background: rgba(14, 28, 19, 0.88) !important;
+  border-color: rgba(74, 222, 128, 0.2) !important;
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.65) !important;
+}
 
+body:not(.light-theme-override) .panel {
+  background: rgba(16, 32, 22, 0.92) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.18) !important;
+  box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.65) !important;
+  color: #f1f5f2;
+}
+
+body:not(.light-theme-override) .bento-card {
+  background: rgba(18, 36, 25, 0.88) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.2) !important;
+  box-shadow: 0 14px 32px -4px rgba(0, 0, 0, 0.55) !important;
+}
+
+body:not(.light-theme-override) .bento-card:hover {
+  background: rgba(22, 44, 30, 0.96) !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+}
+
+body:not(.light-theme-override) .bento-title {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .bento-desc {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .ps-deliverables-banner {
+  background: linear-gradient(135deg, rgba(14, 30, 20, 0.95) 0%, rgba(10, 22, 15, 0.98) 100%) !important;
+  border: 1.5px solid rgba(34, 197, 94, 0.35) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:not(.light-theme-override) .ps-deliverables-title {
+  color: #86efac !important;
+}
+
+body:not(.light-theme-override) .ps-deliverable-card {
+  background: #112217 !important;
+  border: 1.5px solid #1e3a29 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+body:not(.light-theme-override) .ps-deliverable-card:hover {
+  border-color: #4ade80 !important;
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.22) !important;
+}
+
+body:not(.light-theme-override) .ps-deliverable-name {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .ps-deliverable-desc {
+  color: #9ca3af !important;
+}
+
+body:not(.light-theme-override) .ps-deliverable-btn {
+  background: #193122 !important;
+  color: #e2e8f0 !important;
+  border-color: #274833 !important;
+}
+
+body:not(.light-theme-override) .ps-deliverable-btn:hover {
+  background: #22c55e !important;
+  color: #052e16 !important;
+  border-color: #22c55e !important;
+}
+
+body:not(.light-theme-override) .textarea-container {
+  background: #0d1a12 !important;
+  border-color: #23422f !important;
+}
+
+body:not(.light-theme-override) .textarea-container textarea {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .preset-select {
+  background: #13241a !important;
+  color: #f1f5f2 !important;
+  border-color: #2a4c37 !important;
+}
+
+body:not(.light-theme-override) .grade-pill {
+  background: #13241a !important;
+  border-color: #223c2c !important;
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .grade-pill:hover {
+  background: #1a3224 !important;
+  border-color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .grade-pill.active {
+  background: #15803d !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .grade-pill.active .grade-subtitle {
+  color: #bbf7d0 !important;
+}
+
+body:not(.light-theme-override) .action-pill-btn.secondary {
+  background: #16281e !important;
+  border-color: #274833 !important;
+  color: #e5e7eb !important;
+}
+
+body:not(.light-theme-override) .action-pill-btn.secondary:hover {
+  background: #223f2d !important;
+  border-color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .lesson-card {
+  background: #122117 !important;
+  border-color: #1e3828 !important;
+  color: #f1f5f2 !important;
+}
+
+/* ==========================================================================
+   Screen 2: Language Selection Dark Theme (Rich Emerald Obsidian & Gold)
+   ========================================================================== */
+body:not(.light-theme-override) .language-group-panel {
+  background: rgba(14, 28, 19, 0.94) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.22) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65) !important;
+}
+
+body:not(.light-theme-override) .language-group-header {
+  border-bottom: 1px solid rgba(74, 222, 128, 0.15) !important;
+}
+
+body:not(.light-theme-override) .group-heading {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .group-blurb {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .group-type-tag--ai {
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #86efac !important;
+  border-color: rgba(74, 222, 128, 0.35) !important;
+}
+
+body:not(.light-theme-override) .group-type-tag--bank {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #fde68a !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+body:not(.light-theme-override) .lang-select-card {
+  background: #0f1d14 !important;
+  border: 1.5px solid #1e3a29 !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+  color: #f1f5f2 !important;
+}
+
+body:not(.light-theme-override) .lang-select-card:hover {
+  background: #14281c !important;
+  border-color: #4ade80 !important;
+  box-shadow: 0 10px 28px rgba(34, 197, 94, 0.2) !important;
+}
+
+body:not(.light-theme-override) .lang-select-card.is-selected {
+  background: #12331f !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 12px 32px rgba(34, 197, 94, 0.35) !important;
+}
+
+body:not(.light-theme-override) .lang-select-card.is-bank.is-selected {
+  background: #2a1f0a !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 12px 32px rgba(245, 158, 11, 0.3) !important;
+}
+
+body:not(.light-theme-override) .lang-card-check-box {
+  background: #112217 !important;
+  border-color: #335340 !important;
+}
+
+body:not(.light-theme-override) .lang-card-name {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .lang-card-native {
+  background: #183021 !important;
+  color: #86efac !important;
+  border-color: #224a31 !important;
+}
+
+body:not(.light-theme-override) .lang-card-desc {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .lang-badge--ai {
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #86efac !important;
+  border-color: rgba(74, 222, 128, 0.35) !important;
+}
+
+body:not(.light-theme-override) .lang-badge--bank {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #fde68a !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+body:not(.light-theme-override) .lang-card-note {
+  background: #0d1e2e !important;
+  color: #38bdf8 !important;
+  border-color: #0369a1 !important;
+}
+
+body:not(.light-theme-override) .native-script-hero {
+  background: #102016 !important;
+  border-color: #1e3a29 !important;
+}
+
+body:not(.light-theme-override) .native-script-text {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .phrase-audio-btn {
+  background: #153823 !important;
+  border-color: #22c55e !important;
+  color: #86efac !important;
+}
+
+body:not(.light-theme-override) .phrase-audio-btn:hover {
+  background: #166534 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4) !important;
+}
+
+body:not(.light-theme-override) .live-lang-picker {
+  background: rgba(14, 28, 19, 0.88) !important;
+  border-color: rgba(74, 222, 128, 0.2) !important;
+}
+
+body:not(.light-theme-override) .picker-label {
+  color: #86efac !important;
+}
+
+body:not(.light-theme-override) .app-footer {
+  background: #0d1a12 !important;
+  border-color: #1b3323 !important;
+}
+
+body:not(.light-theme-override) .trust-link {
+  background: #14271c !important;
+  color: #86efac !important;
+  border-color: #22422e !important;
+}
+
+body:not(.light-theme-override) .trust-link:hover {
+  background: #22c55e !important;
+  color: #052e16 !important;
+}
+
+/* Mascot Card Dark Theme (Stitch Clean Dark) */
+body:not(.light-theme-override) .boli-mascot-card {
+  background: linear-gradient(135deg, #112419 0%, #0d1e15 50%, #132a1d 100%) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.3) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:not(.light-theme-override) .boli-mascot-card:hover {
+  border-color: #4ade80 !important;
+  box-shadow: 0 12px 32px rgba(34, 197, 94, 0.25) !important;
+}
+
+body:not(.light-theme-override) .mascot-speech-bubble {
+  background: #152d1f !important;
+  border-color: rgba(74, 222, 128, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+body:not(.light-theme-override) .speech-bubble-tail {
+  background: #152d1f !important;
+  border-left-color: rgba(74, 222, 128, 0.35) !important;
+  border-bottom-color: rgba(74, 222, 128, 0.35) !important;
+}
+
+body:not(.light-theme-override) .mascot-name-tag {
+  color: #86efac !important;
+}
+
+body:not(.light-theme-override) .mascot-dialogue {
+  color: #ffffff !important;
+}
+
+/* Pedagogy Flow Indicator (Hero Step Bar) Dark Theme */
+body:not(.light-theme-override) .pedagogy-flow-indicator {
+  background: rgba(14, 28, 19, 0.88) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.22) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:not(.light-theme-override) .flow-step-title {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .flow-step-sub {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .flow-arrow {
+  color: #4ade80 !important;
+}
+
+/* Segmented Mode Switcher Dark Theme */
+body:not(.light-theme-override) .segmented-control {
+  background: rgba(14, 28, 19, 0.88) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.22) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+body:not(.light-theme-override) .segmented-btn {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .segmented-btn:hover {
+  color: #86efac !important;
+}
+
+body:not(.light-theme-override) .segmented-btn.active {
+  background: #1a3825 !important;
+  color: #ffffff !important;
+  border: 1px solid #4ade80 !important;
+  box-shadow: 0 2px 10px rgba(34, 197, 94, 0.25) !important;
+}
+
+/* Pedagogy Amber Feedback Box Dark Theme */
+body:not(.light-theme-override) .pedagogy-note-box {
+  background: rgba(42, 23, 0, 0.85) !important;
+  border: 1.5px solid rgba(254, 166, 25, 0.4) !important;
+}
+
+body:not(.light-theme-override) .pedagogy-text {
+  color: #fed7aa !important;
+}
+
+/* Stepper Component in Header */
+body:not(.light-theme-override) .progress {
+  background: #0f2015 !important;
+  border-color: #1e3a29 !important;
+}
+
+body:not(.light-theme-override) .progress li {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .progress li.is-current {
+  background: #166534 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.35) !important;
+}
+
+body:not(.light-theme-override) .progress li.is-done {
+  color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .progress li.is-done .step-number {
+  background: #15803d !important;
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   LIVE CLASSROOM & SOUNDBOARD (RICH DARK THEME)
+   Deep obsidian-emerald with warm amber and royal blue jewel accents
+   ========================================================================== */
+body:not(.light-theme-override) .institutional-feasibility-bar {
+  background: rgba(14, 28, 20, 0.92) !important;
+  border: 1px solid rgba(74, 222, 128, 0.25) !important;
+  border-left: 4px solid #22c55e !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+body:not(.light-theme-override) .feasibility-item {
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .feasibility-item strong {
+  color: #f8fafc !important;
+}
+
+body:not(.light-theme-override) .feasibility-divider {
+  background: rgba(74, 222, 128, 0.2) !important;
+}
+
+body:not(.light-theme-override) .teacher-soundboard-panel {
+  background: rgba(15, 29, 21, 0.94) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.22) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55) !important;
+}
+
+body:not(.light-theme-override) .soundboard-header {
+  border-bottom: 1px solid rgba(74, 222, 128, 0.15) !important;
+}
+
+body:not(.light-theme-override) .soundboard-title {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .soundboard-subtitle {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .soundboard-icon {
+  background: rgba(254, 166, 25, 0.2) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(254, 166, 25, 0.35) !important;
+}
+
+body:not(.light-theme-override) .soundboard-tab-btn {
+  background: #112217 !important;
+  border: 1.5px solid #1e3a29 !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .soundboard-tab-btn:hover {
+  background: #183323 !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .soundboard-tab-btn.active {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35) !important;
+}
+
+body:not(.light-theme-override) .soundboard-chip-card {
+  background: #0f1d14 !important;
+  border: 1.5px solid #1a3523 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+body:not(.light-theme-override) .soundboard-chip-card:hover {
+  background: #14281c !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2) !important;
+  transform: translateY(-2px);
+}
+
+body:not(.light-theme-override) .sb-hindi-phrase {
+  color: #f8fafc !important;
+}
+
+body:not(.light-theme-override) .sb-native-phrase {
+  color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .sb-phonetic-guide {
+  background: rgba(41, 23, 3, 0.85) !important;
+  border-left: 3px solid #f59e0b !important;
+  color: #fde68a !important;
+}
+
+body:not(.light-theme-override) .sb-hint-tag {
+  color: #64748b !important;
+}
+
+body:not(.light-theme-override) .live-lang-btn {
+  background: #112217 !important;
+  border-color: #1e3a29 !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .live-lang-btn:hover {
+  background: #183323 !important;
+  border-color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .live-lang-btn.active {
+  background: #166534 !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .student-doubts-panel {
+  background: rgba(15, 29, 21, 0.94) !important;
+  border-color: rgba(74, 222, 128, 0.22) !important;
+}
+
+body:not(.light-theme-override) .student-doubt-chip {
+  background: #112217 !important;
+  border-color: #1e3a29 !important;
+}
+
+body:not(.light-theme-override) .student-doubt-chip:hover {
+  background: #183323 !important;
+  border-color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .doubt-text {
+  color: #f8fafc !important;
+}
+
+/* ==========================================================================
+   QUIZ LAB (RICH DARK THEME)
+   Polished primary school game feel with vibrant feedback
+   ========================================================================== */
+body:not(.light-theme-override) .quiz-lab-container {
+  background: rgba(14, 28, 19, 0.94) !important;
+  border: 1.5px solid rgba(74, 222, 128, 0.25) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65) !important;
+}
+
+body:not(.light-theme-override) .quiz-dialect-chip {
+  background: #112217 !important;
+  border: 1.5px solid #1e3a29 !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .quiz-dialect-chip:hover {
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .quiz-dialect-chip.is-active {
+  background: #15803d !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(34, 197, 94, 0.35) !important;
+}
+
+body:not(.light-theme-override) .mode-pill {
+  background: #112217 !important;
+  border: 1.5px solid #1e3a29 !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .mode-pill:hover {
+  border-color: #f59e0b !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .mode-pill.is-active {
+  background: linear-gradient(135deg, #b45309 0%, #78350f 100%) !important;
+  border-color: #f59e0b !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35) !important;
+}
+
+body:not(.light-theme-override) .quiz-grade-spectrum-box {
+  background: #0f1d14 !important;
+  border: 1.5px solid #1e3a29 !important;
+  border-radius: 14px !important;
+  padding: 1.25rem !important;
+}
+
+body:not(.light-theme-override) .spectrum-label {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .grade-tab-btn {
+  background: #112217 !important;
+  border-color: #1e3a29 !important;
+}
+
+body:not(.light-theme-override) .grade-tab-btn:hover {
+  background: #183323 !important;
+  border-color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .grade-tab-btn.is-active {
+  background: #164e2e !important;
+  border-color: #4ade80 !important;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25) !important;
+}
+
+body:not(.light-theme-override) .grade-tab-btn .grade-tab-num {
+  background: #1f3928 !important;
+  color: #86efac !important;
+}
+
+body:not(.light-theme-override) .grade-tab-btn.is-active .grade-tab-num {
+  background: #22c55e !important;
+  color: #052e16 !important;
+}
+
+body:not(.light-theme-override) .grade-tab-title {
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .grade-pedagogy-hint {
+  color: #86efac !important;
+  border-top-color: #1e3a29 !important;
+}
+
+body:not(.light-theme-override) .quiz-question-card {
+  background: #0f1d14 !important;
+  border: 1.5px solid #1e3a29 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+body:not(.light-theme-override) .quiz-bilingual-prompt-wrap {
+  background: #132419 !important;
+  border-color: #203f2c !important;
+}
+
+body:not(.light-theme-override) .quiz-native-prompt-text {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .quiz-teacher-guide-line {
+  color: #cbd5ce !important;
+  border-top-color: #203f2c !important;
+}
+
+body:not(.light-theme-override) .teacher-guide-text {
+  color: #e2e8f0 !important;
+}
+
+body:not(.light-theme-override) .quiz-audio-box {
+  background: #132419 !important;
+  border-color: #203f2c !important;
+}
+
+body:not(.light-theme-override) .audio-word-native {
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .audio-word-sub {
+  color: #94a398 !important;
+}
+
+body:not(.light-theme-override) .quiz-subprompt-box {
+  background: #132419 !important;
+  border-color: #203f2c !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .quiz-option-btn {
+  background: #132419 !important;
+  border: 1.5px solid #203f2c !important;
+  color: #f1f5f2 !important;
+}
+
+body:not(.light-theme-override) .quiz-option-btn:hover:not(:disabled) {
+  background: #1a3825 !important;
+  border-color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .quiz-option-btn.is-correct {
+  background: #14532d !important;
+  border-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .quiz-option-btn.is-wrong {
+  background: #7f1d1d !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .quiz-progress-track {
+  background: #132219 !important;
+}
+
+body:not(.light-theme-override) .quiz-score-pill {
+  background: #422006 !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.4) !important;
+}
+
+/* ==========================================================================
+   FLASHCARDS (RICH 3D CHILD-FRIENDLY DARK THEME)
+   ========================================================================== */
+body:not(.light-theme-override) .dialect-pill-btn {
+  background: #112217 !important;
+  border-color: #1e3a29 !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .dialect-pill-btn:hover {
+  background: #183323 !important;
+  border-color: #4ade80 !important;
+}
+
+body:not(.light-theme-override) .dialect-pill-btn.active {
+  background: #15803d !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .category-pill-btn {
+  background: #112217 !important;
+  border-color: #1e3a29 !important;
+  color: #cbd5e1 !important;
+}
+
+body:not(.light-theme-override) .category-pill-btn:hover {
+  border-color: #f59e0b !important;
+}
+
+body:not(.light-theme-override) .category-pill-btn.active {
+  background: #78350f !important;
+  border-color: #f59e0b !important;
+  color: #ffffff !important;
+}
+
+body:not(.light-theme-override) .cat-count-badge {
+  background: rgba(0, 0, 0, 0.35) !important;
+  color: #fef08a !important;
+}
+
+body:not(.light-theme-override) .interactive-flashcard-wrap {
+  border-color: rgba(74, 222, 128, 0.3) !important;
+}
+
+body:not(.light-theme-override) .flashcard-face {
+  background: #0f1d14 !important;
+  border: 2px solid #1e3a29 !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+body:not(.light-theme-override) .flashcard-meaning {
+  color: #94a398 !important;
+}

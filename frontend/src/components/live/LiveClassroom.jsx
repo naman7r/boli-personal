@@ -312,7 +312,7 @@ export default function LiveClassroom({ onLoadIntoStudio, currentGrade = 2 }) {
 
       setLiveResult({
         originalHindi: cmd.hindi,
-        targetScript: nativeText,
+        targetScript: audioRes?.targetText || nativeText,
         transliteration: translit,
         isContaminated: false,
         audioBlob,
